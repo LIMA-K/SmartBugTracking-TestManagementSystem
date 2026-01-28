@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Home | Smart Bug Tracker{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<div class="container mt-5">
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <h1 class="fw-bold">Smart Bug Tracking & Test Management System</h1>
+            <p class="text-muted mt-3">
+                A centralized platform to manage test cases, track bugs,
+                and improve software quality through structured QA workflows.
+            </p>
+
+            <a href="{% url 'login' %}" class="btn btn-primary me-2">Login</a>
+            <a href="{% url 'register' %}" class="btn btn-outline-primary">Get Started</a>
+        </div>
+
+        <div class="col-md-6 text-center">
+            <!-- Animation or image can be added later -->
+            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828843.png"
+                 class="img-fluid"
+                 alt="Bug Tracking"
+                 style="max-width: 300px;">
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Key Features</h2>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5>Test Case Management</h5>
+                    <p class="text-muted">
+                        Create, organize and execute test cases easily.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5>Bug Tracking</h5>
+                    <p class="text-muted">
+                        Report, assign and track bugs with status updates.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5>Role Based Access</h5>
+                    <p class="text-muted">
+                        Admin, Tester and Developer specific dashboards.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5>Reports & Dashboard</h5>
+                    <p class="text-muted">
+                        Visual insights for testing and defect analysis.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Roles Section -->
+<div class="container mt-5 mb-5">
+    <h2 class="text-center mb-4">User Roles</h2>
+
+    <div class="row text-center">
+        <div class="col-md-4">
+            <h5>Admin</h5>
+            <p class="text-muted">
+                Manages users, projects and monitors overall testing progress.
+            </p>
+        </div>
+
+        <div class="col-md-4">
+            <h5>Tester</h5>
+            <p class="text-muted">
+                Writes test cases, executes tests and reports bugs.
+            </p>
+        </div>
+
+        <div class="col-md-4">
+            <h5>Developer</h5>
+            <p class="text-muted">
+                Fixes bugs and updates their status in the system.
+            </p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
