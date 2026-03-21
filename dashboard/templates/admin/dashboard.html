@@ -1,0 +1,600 @@
+{% extends "base_dashboard.html" %}
+
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block quick_actions %}
+<a href="{% url 'dashboard:manage_projects' %}" class="btn-quick">
+    <i class="fas fa-plus"></i> New Project
+</a>
+<a href="{% url 'dashboard:admin_assign_bug' %}" class="btn-quick">
+    <i class="fas fa-bug"></i> Assign Bug
+</a>
+{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+  /* Force equal height for both columns */
+.row-equal-height {
+    display: flex;
+    flex-wrap: wrap;
+}
+.row-equal-height > [class*='col-'] {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make card-tables fill the column height */
+.card-table {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure tables scroll horizontally on small screens */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Consistent badge styles for status/priority */
+.badge-custom {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Align action buttons */
+.row-actions {
+    white-space: nowrap;
+}
+.table tbody tr {
+    transition: background 0.2s;
+}
+.table tbody tr:hover {
+    background: rgba(59,130,246,0.08);
+}
+  /* ===== VARIABLES ===== */
+  :root {
+    --bg-dark: #0f1219;
+    --card-bg: #1a1f2b;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --text-primary: #f0f3f8;
+    --text-secondary: #9ca3af;
+    --border: #2a2f3c;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+  }
+
+  body {
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* ===== STATS CARDS (informational, non‑clickable) ===== */
+  .stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 1.5rem;
+    padding: 1.5rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    box-shadow: 0 8px 20px -8px rgba(0,0,0,0.5);
+    border-left: 4px solid var(--accent);
+    height: 100%;
+  }
+
+  .stat-icon {
+    width: 56px;
+    height: 56px;
+    background: rgba(59,130,246,0.1);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: var(--accent);
+  }
+
+  .stat-content h6 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.3px;
+  }
+
+  .stat-content h4 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+  }
+
+  /* ===== ACTION CARDS (clickable, button‑like) ===== */
+  .action-card {
+    background: linear-gradient(135deg, #2a3142, #1e2432);
+    border: 1px solid var(--border);
+    border-radius: 2.5rem; /* pill shape */
+    padding: 1.2rem 1rem;
+    text-align: center;
+    transition: all 0.25s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: white;
+    text-decoration: none;
+    box-shadow: 0 8px 20px -8px rgba(0,0,0,0.6);
+    font-weight: 500;
+  }
+
+  .action-card:hover {
+    background: linear-gradient(135deg, #3a435a, #2a3142);
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: 0 15px 30px -10px rgba(59,130,246,0.4);
+  }
+
+  .action-card i {
+    font-size: 2rem;
+    color: var(--accent);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  }
+
+  .action-card span {
+    font-size: 1rem;
+  }
+
+  .action-card small {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  /* ===== QUICK ACTION BUTTONS (top bar) ===== */
+  .btn-quick {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 2rem;
+    padding: 0.6rem 1.5rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+
+  .btn-quick:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0f1219;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px -8px var(--accent);
+  }
+
+  .btn-quick i {
+    font-size: 1rem;
+  }
+
+  /* ===== CARD TABLES ===== */
+  .card-table {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 1.5rem;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 20px -8px rgba(0,0,0,0.5);
+  }
+
+  .card-header {
+    padding: 1.25rem 2rem;
+    border-bottom: 1px solid var(--border);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+  }
+
+  .card-header i {
+    color: var(--accent);
+  }
+
+  .table {
+    margin-bottom: 0;
+    background: transparent;
+  }
+
+  .table thead th {
+    background: rgba(0,0,0,0.3);
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table tbody td {
+    padding: 1rem 1.5rem;
+    vertical-align: middle;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+  }
+
+  .table tbody tr:hover td {
+    background: rgba(59,130,246,0.05);
+  }
+
+  .row-actions a {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-right: 0.75rem;
+    transition: color 0.2s;
+  }
+
+  .row-actions a:hover {
+    color: var(--accent);
+  }
+
+  .btn-outline-accent {
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 0.3rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .btn-outline-accent:hover {
+    background: var(--accent);
+    color: #0f1219;
+  }
+
+  .badge-custom {
+    padding: 0.3rem 0.8rem;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .badge-open { background: var(--danger); color: white; }
+  .badge-progress { background: var(--warning); color: #0f1219; }
+  .badge-resolved { background: var(--success); color: white; }
+  .badge-closed { background: var(--border); color: var(--text-primary); }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem;
+    background: var(--card-bg);
+    border-radius: 1.5rem;
+    border: 1px dashed var(--border);
+    color: var(--text-secondary);
+  }
+
+  .empty-state i {
+    font-size: 3rem;
+    color: var(--accent);
+    opacity: 0.3;
+    margin-bottom: 1rem;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .stat-card {
+      padding: 1rem;
+    }
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      font-size: 1.5rem;
+    }
+    .stat-content h4 {
+      font-size: 1.5rem;
+    }
+    .action-card {
+      padding: 1rem 0.5rem;
+    }
+  }
+
+</style>
+
+<div class="container-fluid px-4 py-4">
+  <!-- Global Stats -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-folder-open"></i></div>
+        <div class="stat-content">
+          <h6>Projects</h6>
+          <h4>{{ total_projects }}</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-bug"></i></div>
+        <div class="stat-content">
+          <h6>Bugs</h6>
+          <h4>{{ total_bugs }}</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-code"></i></div>
+        <div class="stat-content">
+          <h6>Developers</h6>
+          <h4>{{ total_developers }}</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-vial"></i></div>
+        <div class="stat-content">
+          <h6>Testers</h6>
+          <h4>{{ total_testers }}</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Admin Actions -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-3">
+      <a href="{% url 'dashboard:manage_projects' %}" class="action-card">
+        <i class="fas fa-plus-circle"></i>
+        <span>Manage Projects</span>
+        <small>(create via admin)</small>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{% url 'dashboard:manage_projects' %}" class="action-card">
+        <i class="fas fa-users-cog"></i>
+        <span>Assign Project to Tester</span>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{% url 'dashboard:admin_assign_bug' %}" class="action-card">
+        <i class="fas fa-bug"></i>
+        <span>Assign Bug to Developer</span>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{% url 'admin:auth_user_add' %}" class="action-card" target="_blank">
+        <i class="fas fa-user-plus"></i>
+        <span>Add User</span>
+        <small>via admin</small>
+      </a>
+    </div>
+  </div>
+
+  <!-- Projects Overview -->
+  <!-- ===== Projects & Assignments (Full Width) ===== -->
+<div class="card-table">
+  <div class="card-header">
+    <span><i class="fas fa-project-diagram me-2"></i>Projects & Assignments</span>
+    <a href="{% url 'dashboard:manage_projects' %}" class="btn-outline-accent">View All</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Project</th>
+          <th>Testers</th>
+          <th>Test Cases</th>
+          <th>Bugs</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for project in projects %}
+        <tr>
+          <td>{{ project.name }}</td>
+          <td>
+            {% for tester in project.testers.all %}
+              <span class="badge-custom" style="background: var(--border);">
+                {{ tester.username }}
+              </span>
+            {% empty %}
+              <span class="text-secondary">Unassigned</span>
+            {% endfor %}
+          </td>
+          <td>{{ project.test_cases_count }}</td>
+          <td>{{ project.bugs_count }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center py-4">No projects available.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== Unassigned Bugs (Full Width, Below Projects) ===== -->
+<div class="card-table mt-4">
+  <div class="card-header">
+    <span><i class="fas fa-exclamation-triangle me-2"></i>Unassigned Bugs</span>
+    <a href="{% url 'dashboard:admin_assign_bug' %}" class="btn-outline-accent">View All</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Bug</th>
+          <th>Project</th>
+          <th>Priority</th>
+          <th>Created</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for bug in unassigned_bugs %}
+        <tr>
+          <td>{{ bug.title }}</td>
+          <td>{{ bug.test_case.scenario.project.name }}</td>
+          <td>
+            <span class="badge-custom 
+              {% if bug.priority == 'High' %}badge-open
+              {% elif bug.priority == 'Medium' %}badge-progress
+              {% else %}badge-closed{% endif %}">
+              {{ bug.priority }}
+            </span>
+          </td>
+          <td>{{ bug.created_at|timesince }} ago</td>
+          <td>
+            <a href="{% url 'dashboard:admin_assign_bug' %}" 
+               class="btn-outline-accent" style="padding:0.2rem 0.5rem;">
+               Assign
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center py-4">All bugs assigned.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== Testers & Developers (2 Columns) ===== -->
+<div class="row mt-4">
+
+  <!-- Testers -->
+  <div class="col-lg-6">
+    <div class="card-table">
+      <div class="card-header">
+        <span><i class="fas fa-vial me-2"></i>Testers</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Assigned Projects</th>
+              <th>Last Login</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tester in testers %}
+<tr>
+  <td class="text-center">{{ tester.username }}</td>
+  <td class="text-center">{{ tester.assigned_projects_count }}</td>
+  <td class="text-center">{{ tester.last_login|timesince|default:"Never" }} ago</td>
+</tr>
+
+            {% empty %}
+            <tr><td colspan="3" class="text-center py-4">No testers.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Developers -->
+  <div class="col-lg-6">
+    <div class="card-table">
+      <div class="card-header">
+        <span><i class="fas fa-code me-2"></i>Developers</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+                <th>Username</th>
+                 <th>Assigned Bugs</th>
+                <th>Resolved / Closed</th>
+            </tr>
+          </thead>
+          <tbody>
+                 {% for dev in developers %}
+                        <tr>
+                            <td class="text-center:""">{{ dev.username }}</td>
+                            <td class="text-center">{{ dev.assigned_bugs_count }}</td>
+                            <td class="text-center">{{ dev.resolved_closed_count }}</td>
+                        </tr>
+                        {% empty %}
+            <tr><td colspan="3" class="text-center py-4">No developers.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+   
+              
+      
+         
+  <!-- Bug Status Chart -->
+  <div class="card-table mt-4 p-4 text-center">
+    <h5 class="text-white mb-3">Bug Status Overview</h5>
+    <div style="max-width: 500px; margin: 0 auto;">
+      <canvas id="statusChart" style="max-height: 250px;"></canvas>
+    </div>
+  </div>
+
+  <!-- Recent Activity Feed (optional) -->
+  <div class="card-table mt-4">
+    <div class="card-header">
+      <span><i class="fas fa-history me-2"></i>Recent Activity</span>
+    </div>
+    <div class="p-3">
+      {% for activity in recent_activities %}
+      <div class="d-flex align-items-center mb-2">
+        <i class="fas fa-circle me-2" style="font-size:0.5rem; color:var(--accent);"></i>
+        <span>{{ activity.message }}</span>
+        <small class="ms-auto text-muted">{{ activity.timestamp|timesince }} ago</small>
+      </div>
+      {% empty %}
+      <p class="text-muted">No recent activity.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById('statusChart');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: [{% for s in status_data %}"{{ s.status }}",{% endfor %}],
+        datasets: [{
+          data: [{% for s in status_data %}{{ s.count }},{% endfor %}],
+          backgroundColor: ['#ef4444','#f59e0b','#10b981','#6b7280'],
+          borderWidth: 0,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color: '#9ca3af' } }
+        }
+      }
+    });
+  }
+</script>
+{% endblock %}

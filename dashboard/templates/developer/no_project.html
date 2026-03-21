@@ -1,0 +1,17 @@
+{% extends "base_dashboard.html" %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center" style="height:70vh;">
+    <div class="text-center">
+        <h1 class="text-danger">⚠ No Project Assigned</h1>
+        <p class="mt-3 fs-5">
+            Your account is active, but the administrator has not assigned any project yet.
+        </p>
+        <p>Please contact the admin or wait for project assignment.</p>
+
+        <a href="{% url 'logout' %}" class="btn btn-outline-danger mt-3">
+            Logout
+        </a>
+    </div>
+</div>
+{% endblock %}

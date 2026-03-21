@@ -1,0 +1,289 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Font Awesome link removed – Bootstrap Icons are in base -->
+
+<style>
+  /* Page header */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem 0 2rem 0;
+  }
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .page-title i {
+    color: #f97316;
+    font-size: 2rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(249,115,22,0.2);
+  }
+  .total-badge {
+    background: #0f172a;
+    color: white;
+    padding: 0.4rem 1.2rem;
+    border-radius: 40px;
+    font-weight: 500;
+  }
+
+  /* Card styling */
+  .bugs-card {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.02);
+    overflow: hidden;
+  }
+  .card-header-custom {
+    padding: 1.5rem 2rem;
+    background: white;
+    border-bottom: 1px solid #f1f4f8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-header-custom h5 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .card-header-custom h5 i {
+    color: #f97316;
+    background: rgba(249,115,22,0.1);
+    padding: 0.5rem;
+    border-radius: 14px;
+  }
+
+  /* Bug list items – card-like */
+  .bug-list {
+    padding: 0.5rem 1.5rem 1.5rem;
+  }
+  .bug-item {
+    background: #f8fafc;
+    border-radius: 20px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+    border: 1px solid #e2e8f0;
+  }
+  .bug-item:hover {
+    background: white;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    border-color: #f97316;
+  }
+
+  .bug-info h6 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+  }
+  .bug-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.3rem;
+  }
+
+  /* Badges */
+  .badge-custom {
+    padding: 0.4em 1em;
+    border-radius: 30px;
+    font-weight: 500;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .badge-open { background: #e2e8f0; color: #334155; }
+  .badge-progress { background: #cff4fc; color: #055160; }
+  .badge-resolved { background: #d1e7dd; color: #0f5132; }
+  .badge-closed { background: #d1d5db; color: #1f2937; }
+
+  .badge-critical { background: #fee2e2; color: #b91c1c; }
+  .badge-high { background: #fff3cd; color: #856404; }
+  .badge-medium { background: #cff4fc; color: #055160; }
+  .badge-low { background: #d1fae5; color: #065f46; }
+
+  /* Action buttons */
+  .action-group {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .btn-outline-orange {
+    border: 1px solid #f97316;
+    color: #f97316;
+    background: transparent;
+    border-radius: 40px;
+    padding: 0.4rem 1.2rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .btn-outline-orange:hover {
+    background: #f97316;
+    color: white;
+  }
+  .btn-outline-orange i {
+    font-size: 0.9rem;
+  }
+
+  .btn-outline-success {
+    border: 1px solid #10b981;
+    color: #10b981;
+    background: transparent;
+    border-radius: 40px;
+    padding: 0.4rem 1.2rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .btn-outline-success:hover {
+    background: #10b981;
+    color: white;
+  }
+
+  .btn-outline-warning {
+    border: 1px solid #f59e0b;
+    color: #f59e0b;
+    background: transparent;
+    border-radius: 40px;
+    padding: 0.4rem 1.2rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .btn-outline-warning:hover {
+    background: #f59e0b;
+    color: white;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 0;
+    color: #64748b;
+  }
+  .empty-state i {
+    font-size: 3rem;
+    opacity: 0.3;
+    margin-bottom: 1rem;
+    color: #f97316;
+  }
+</style>
+
+<div class="container-fluid px-4">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h2 class="page-title">
+      <i class="bi bi-bug"></i> Tester Bugs
+    </h2>
+    <span class="total-badge"><i class="bi bi-list me-2"></i>{{ bugs|length }} Total</span>
+  </div>
+
+  <!-- Bugs Card -->
+  <div class="bugs-card">
+    <div class="card-header-custom">
+      <h5><i class="bi bi-bug-fill"></i> Reported Bugs</h5>
+    </div>
+
+    <div class="bug-list">
+      {% if bugs %}
+        {% for bug in bugs %}
+          <div class="bug-item">
+            <!-- Left side: bug info -->
+            <div class="bug-info">
+              <h6>{{ bug.title }}</h6>
+              <div class="bug-meta">
+                <!-- Status badge -->
+                {% if bug.status == "Open" %}
+                  <span class="badge-custom badge-open"><i class="bi bi-door-open"></i> Open</span>
+                {% elif bug.status == "In Progress" %}
+                  <span class="badge-custom badge-progress"><i class="bi bi-arrow-repeat"></i> In Progress</span>
+                {% elif bug.status == "Resolved" %}
+                  <span class="badge-custom badge-resolved"><i class="bi bi-check-circle-fill"></i> Resolved</span>
+                {% elif bug.status == "Closed" %}
+                  <span class="badge-custom badge-closed"><i class="bi bi-check-all"></i> Closed</span>
+                {% endif %}
+
+                <!-- Priority badge -->
+                {% if bug.priority == "Critical" %}
+                  <span class="badge-custom badge-critical"><i class="bi bi-exclamation-triangle-fill"></i> Critical</span>
+                {% elif bug.priority == "High" %}
+                  <span class="badge-custom badge-high"><i class="bi bi-arrow-up"></i> High</span>
+                {% elif bug.priority == "Medium" %}
+                  <span class="badge-custom badge-medium"><i class="bi bi-dash"></i> Medium</span>
+                {% elif bug.priority == "Low" %}
+                  <span class="badge-custom badge-low"><i class="bi bi-arrow-down"></i> Low</span>
+                {% endif %}
+
+                <!-- Assigned developer -->
+                <small class="text-muted">
+                  <i class="bi bi-person-circle me-1"></i> {{ bug.assigned_to.username|default:"Not assigned" }}
+                </small>
+              </div>
+            </div>
+
+            <!-- Right side: action buttons -->
+            <div class="action-group">
+              <!-- Retest & Close (only for Resolved bugs reported by current user) -->
+              {% if bug.status == "Resolved" and request.user == bug.reported_by %}
+                <form method="POST" action="{% url 'dashboard:retest_bug' bug.id %}" style="display: inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-outline-warning">
+                    <i class="bi bi-arrow-repeat"></i> Retest
+                  </button>
+                </form>
+                <form method="POST" action="{% url 'dashboard:close_bug' bug.id %}" style="display: inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-outline-success">
+                    <i class="bi bi-check"></i> Close
+                  </button>
+                </form>
+              {% endif %}
+
+              <!-- Discussion button -->
+              <a href="{% url 'dashboard:update_bug_status' bug.id %}" class="btn-outline-orange">
+                <i class="bi bi-chat-dots"></i> Discussion
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <i class="bi bi-bug"></i>
+          <p>No bugs reported yet.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

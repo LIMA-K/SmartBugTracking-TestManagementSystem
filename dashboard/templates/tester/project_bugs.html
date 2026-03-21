@@ -1,0 +1,135 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Bootstrap Icons are already in base, so no extra link needed -->
+
+<style>
+  /* Additional page-specific styles (reusing dashboard variables) */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem 0 2rem 0;
+  }
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f172a; /* dark navy */
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .page-title i {
+    color: #f97316; /* orange */
+    font-size: 2rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(249,115,22,0.2);
+  }
+
+  /* Project cards */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  .project-card {
+    background: white;
+    border-radius: 24px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+    border: 1px solid rgba(0,0,0,0.02);
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .project-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 25px 40px -12px rgba(249,115,22,0.3);
+    border-color: rgba(249,115,22,0.2);
+    text-decoration: none;
+    color: inherit;
+  }
+  .project-icon {
+    width: 60px;
+    height: 60px;
+    background: rgba(249,115,22,0.1);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #f97316;
+    margin-bottom: 1.2rem;
+  }
+  .project-name {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+  }
+  .project-meta {
+    font-size: 0.9rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .empty-state {
+    background: white;
+    border-radius: 24px;
+    padding: 4rem 2rem;
+    text-align: center;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+  }
+  .empty-state i {
+    font-size: 4rem;
+    color: #f97316;
+    opacity: 0.3;
+    margin-bottom: 1rem;
+  }
+  .empty-state p {
+    font-size: 1.2rem;
+    color: #64748b;
+  }
+</style>
+
+<div class="container-fluid px-4">
+  <!-- Header -->
+  <div class="page-header">
+    <h2 class="page-title">
+      <i class="bi bi-folder2-open"></i> Your Assigned Projects
+    </h2>
+    <!-- Optional: add a small badge or count if needed -->
+  </div>
+
+  <!-- Projects Grid -->
+  {% if projects %}
+    <div class="projects-grid">
+      {% for project in projects %}
+        <a href="{% url 'dashboard:project_bugs' project.id %}" class="project-card">
+          <div class="project-icon">
+            <i class="bi bi-diagram-3"></i>
+          </div>
+          <div class="project-name">{{ project.name }}</div>
+          <div class="project-meta">
+            <i class="bi bi-bug-fill" style="color: #f97316;"></i>
+            <span>View bugs & details</span>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <!-- Empty state -->
+    <div class="empty-state">
+      <i class="bi bi-folder2-open"></i>
+      <p>No projects assigned yet.</p>
+      <span class="text-muted">When a project is assigned, it will appear here.</span>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

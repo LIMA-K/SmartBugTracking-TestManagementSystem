@@ -1,0 +1,297 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+  :root {
+    --jira-dark-bg: #101214;
+    --jira-card-bg: #1f2a3a;
+    --jira-accent: #579dff;
+    --jira-accent-hover: #85b8ff;
+    --jira-text: #b6c2cf;
+    --jira-text-muted: #8c9bab;
+    --jira-border: #38414b;
+    --jira-table-header: #0f172a;
+  }
+
+  body {
+    background-color: var(--jira-dark-bg);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--jira-text);
+  }
+
+  /* Page Header */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    background: var(--jira-card-bg);
+    padding: 1.2rem 2rem;
+    border-radius: 28px;
+    border: 1px solid var(--jira-border);
+    box-shadow: 0 8px 20px -8px rgba(0,0,0,0.6);
+  }
+
+  .page-header h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin: 0;
+  }
+
+  .page-header h2 i {
+    color: var(--jira-accent);
+    background: rgba(87,157,255,0.1);
+    padding: 0.5rem;
+    border-radius: 16px;
+  }
+
+  .total-badge {
+    background: #2d3e55;
+    padding: 0.5rem 1.5rem;
+    border-radius: 40px;
+    font-weight: 500;
+    border: 1px solid var(--jira-border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Table Container */
+  .table-container {
+    background: var(--jira-card-bg);
+    border-radius: 28px;
+    border: 1px solid var(--jira-border);
+    overflow: hidden;
+    box-shadow: 0 15px 30px -12px rgba(0,0,0,0.7);
+  }
+
+  .table {
+    margin-bottom: 0;
+    background: transparent;
+  }
+
+  .table thead th {
+    background: var(--jira-table-header);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--jira-border);
+    white-space: nowrap;
+  }
+
+  .table tbody td {
+    padding: 1rem 1.5rem;
+    vertical-align: middle;
+    color: var(--jira-text);
+    border-bottom: 1px solid var(--jira-border);
+    background: transparent;
+  }
+
+  .table tbody tr:hover td {
+    background: rgba(87,157,255,0.05);
+  }
+
+  /* Project name with icon */
+  .project-name {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+    color: white;
+  }
+  .project-name i {
+    color: var(--jira-accent);
+    font-size: 1.2rem;
+  }
+
+  /* Tester badges */
+  .tester-badge {
+    background: #2d3e55;
+    padding: 0.2rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--jira-text);
+    border: 1px solid var(--jira-border);
+  }
+  .tester-badge i {
+    color: var(--jira-accent);
+    font-size: 0.7rem;
+  }
+
+  /* Action buttons */
+  .action-icons {
+    display: flex;
+    gap: 0.75rem;
+  }
+  .action-icons a {
+    color: var(--jira-text-muted);
+    font-size: 1.1rem;
+    padding: 0.4rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+  .action-icons a:hover {
+    color: var(--jira-accent);
+    background: rgba(87,157,255,0.1);
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 4rem;
+    background: var(--jira-card-bg);
+    border-radius: 28px;
+    border: 1px dashed var(--jira-border);
+    color: var(--jira-text-muted);
+  }
+  .empty-state i {
+    font-size: 3rem;
+    color: var(--jira-accent);
+    opacity: 0.3;
+    margin-bottom: 1rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .page-header {
+      flex-direction: column;
+      align-items: start;
+      gap: 1rem;
+    }
+    .table thead {
+      display: none;
+    }
+    .table tbody tr {
+      display: block;
+      margin-bottom: 1rem;
+      border: 1px solid var(--jira-border);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+    .table tbody td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border: none;
+    }
+    .table tbody td::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: white;
+      width: 40%;
+    }
+    .action-icons {
+      justify-content: flex-end;
+    }
+  }
+</style>
+
+<div class="container-fluid px-4">
+  <!-- Header -->
+  <div class="page-header">
+    <h2>
+      <i class="fas fa-diagram-project"></i> Projects
+    </h2>
+    <span class="total-badge">
+      <i class="fas fa-folder-open"></i> {{ projects|length }} total
+    </span>
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  {% if projects %}
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Project Name</th>
+            <th>Description</th>
+            <th>Assigned Testers</th>
+            <th>Test Cases</th>
+            <th>Bugs</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for project in projects %}
+          <tr>
+            <td data-label="Project">
+              <div class="project-name">
+                <i class="fas fa-folder"></i> {{ project.name }}
+              </div>
+            </td>
+            <td data-label="Description">
+              {% if project.description %}
+                {{ project.description|truncatechars:60 }}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td data-label="Testers">
+              <div style="display: flex; flex-wrap: wrap; gap: 0.3rem;">
+                {% if project.testers.all %}
+                  {% for tester in project.testers.all %}
+                    <span class="tester-badge">
+                      <i class="fas fa-user"></i> {{ tester.username }}
+                    </span>
+                  {% endfor %}
+                {% else %}
+                  <span class="text-muted">None</span>
+                {% endif %}
+              </div>
+            </td>
+            <td data-label="Test Cases">{{ project.test_cases_count|default:"0" }}</td>
+            <td data-label="Bugs">{{ project.bugs_count|default:"0" }}</td>
+            <td data-label="Actions">
+              <div class="action-icons">
+                <a href="{% url 'dashboard:assign_tester_to_project' project.id %}" title="Assign Tester">
+                  <i class="fas fa-user-plus"></i>
+                </a>
+                <a href="#" title="Edit Project">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <a href="#" title="Delete Project" onclick="return confirm('Are you sure?')">
+                  <i class="fas fa-trash-alt"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <i class="fas fa-folder-open"></i>
+      <h4>No projects yet</h4>
+      <p class="text-muted">Create a new project to get started.</p>
+      <a href="{% url 'dashboard:create_project' %}" class="btn btn-primary mt-3">
+        <i class="fas fa-plus"></i> New Project
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

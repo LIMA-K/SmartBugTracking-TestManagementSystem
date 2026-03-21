@@ -1,0 +1,272 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Bootstrap Icons are already in base, so no extra link needed -->
+
+<style>
+  /* Page header – matches dashboard style */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem 0 2rem 0;
+  }
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .page-title i {
+    color: #f97316;
+    font-size: 2rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(249,115,22,0.2);
+  }
+
+  /* Button – orange outline (matches "Report Bug") */
+  .btn-outline-orange {
+    border: 1px solid #f97316;
+    color: #f97316;
+    background: transparent;
+    border-radius: 40px;
+    padding: 0.5rem 1.8rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-outline-orange:hover {
+    background: #f97316;
+    color: white;
+  }
+
+  /* Card styling */
+  .scenarios-card {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.02);
+    overflow: hidden;
+  }
+  .card-header-custom {
+    padding: 1.5rem 2rem;
+    background: white;
+    border-bottom: 1px solid #f1f4f8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-header-custom h5 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .card-header-custom h5 i {
+    color: #f97316;
+    background: rgba(249,115,22,0.1);
+    padding: 0.5rem;
+    border-radius: 14px;
+  }
+  .total-badge {
+    background: #0f172a;
+    color: white;
+    padding: 0.4rem 1.2rem;
+    border-radius: 40px;
+    font-weight: 500;
+  }
+
+  /* Table styles */
+  .table-responsive {
+    overflow-x: auto;
+  }
+  .table {
+    margin-bottom: 0;
+    min-width: 1000px;
+  }
+  .table thead th {
+    background: #f8fafc;
+    color: #0f172a;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+  }
+  .table tbody tr {
+    transition: background 0.15s;
+  }
+  .table tbody tr:hover {
+    background: #f1f5f9;
+  }
+  .table td {
+    padding: 1.2rem 1.5rem;
+    vertical-align: middle;
+    border-color: #e2e8f0;
+    color: #334155;
+  }
+
+  /* Status badges with icons */
+  .badge-custom {
+    padding: 0.5em 1.2em;
+    border-radius: 30px;
+    font-weight: 500;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .badge-high { background: #fee2e2; color: #b91c1c; }
+  .badge-medium { background: #fff3cd; color: #856404; }
+  .badge-low { background: #d1fae5; color: #065f46; }
+  .badge-new { background: #e2e8f0; color: #334155; }
+  .badge-review { background: #cff4fc; color: #055160; }
+  .badge-approved { background: #d1e7dd; color: #0f5132; }
+
+  /* Action buttons – icon only with tooltips */
+  .action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: #64748b;
+    background: transparent;
+    border: 1px solid transparent;
+    margin: 0 2px;
+  }
+  .action-btn:hover {
+    background: #f1f5f9;
+    color: #f97316;
+    border-color: #e2e8f0;
+  }
+  .action-btn.delete:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+  .action-btn.run:hover {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 0;
+    color: #64748b;
+  }
+  .empty-state i {
+    font-size: 3rem;
+    opacity: 0.3;
+    margin-bottom: 1rem;
+    color: #f97316;
+  }
+</style>
+
+<div class="container-fluid px-4">
+  <!-- Header -->
+  <div class="page-header">
+    <h2 class="page-title">
+      <i class="bi bi-flask"></i> {{ project.name }} – Test Scenarios
+    </h2>
+    <a href="{% url 'dashboard:create_scenario' project.id %}" class="btn-outline-orange">
+      <i class="bi bi-plus-circle"></i> Create Scenario
+    </a>
+  </div>
+
+  <!-- Scenarios Card -->
+  <div class="scenarios-card">
+    <div class="card-header-custom">
+      <h5><i class="bi bi-list"></i> Scenario List</h5>
+      <span class="total-badge">Total: {{ scenarios.count }}</span>
+    </div>
+
+    <div class="table-responsive">
+      {% if scenarios %}
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Title / Description</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Test Cases</th>
+              <th>Created By</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for scenario in scenarios %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>
+                <strong>{{ scenario.title }}</strong><br>
+                <small class="text-muted">{{ scenario.description|truncatewords:10 }}</small>
+              </td>
+              <td>
+                {% if scenario.priority == "HIGH" %}
+                  <span class="badge-custom badge-high"><i class="bi bi-arrow-up"></i> High</span>
+                {% elif scenario.priority == "MEDIUM" %}
+                  <span class="badge-custom badge-medium"><i class="bi bi-dash"></i> Medium</span>
+                {% else %}
+                  <span class="badge-custom badge-low"><i class="bi bi-arrow-down"></i> Low</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if scenario.status == "NEW" %}
+                  <span class="badge-custom badge-new"><i class="bi bi-circle"></i> New</span>
+                {% elif scenario.status == "IN_REVIEW" %}
+                  <span class="badge-custom badge-review"><i class="bi bi-eye"></i> In Review</span>
+                {% else %}
+                  <span class="badge-custom badge-approved"><i class="bi bi-check-circle-fill"></i> Approved</span>
+                {% endif %}
+              </td>
+              <td>
+               {{ scenario.testcases.count }}
+              </td>
+              <td>{{ scenario.created_by.username }}</td>
+              <td class="text-end">
+                <!-- View Test Cases -->
+                <a href="{% url 'dashboard:testcase_list' scenario.id %}" class="action-btn" title="View Test Cases">
+                  <i class="bi bi-card-checklist"></i>
+                </a>
+                <!-- Run Execution -->
+                <a href="{% url 'dashboard:tester_execution' scenario.id %}" class="action-btn run" title="Run Execution">
+                  <i class="bi bi-play-fill"></i>
+                </a>
+                <!-- Edit -->
+                <a href="{% url 'dashboard:edit_scenario' scenario.id %}" class="action-btn" title="Edit">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <!-- Delete -->
+                <a href="{% url 'dashboard:delete_scenario' scenario.id %}" class="action-btn delete" title="Delete"
+                   onclick="return confirm('Are you sure you want to delete this scenario?');">
+                  <i class="bi bi-trash"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="empty-state">
+          <i class="bi bi-flask"></i>
+          <p>No scenarios created yet.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

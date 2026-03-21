@@ -1,0 +1,71 @@
+{% extends "base_dashboard.html" %}
+
+{% block page_title %}Assign Tester to {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <div class="card-table" style="max-width: 500px; margin: 0 auto;">
+        <div class="card-header">
+            <span><i class="fas fa-user-tag me-2" style="color: var(--jira-accent);"></i>Assign Tester</span>
+            <span class="text-muted small">{{ project.name }}</span>
+        </div>
+        <div class="p-4">
+            <form method="post">
+                {% csrf_token %}
+                <div class="field-group mb-4">
+                    <label for="tester_id" class="form-label fw-semibold">
+                        <i class="fas fa-users me-1" style="color: var(--jira-accent);"></i> Select Tester
+                    </label>
+                    <select name="tester_id" id="tester_id" class="form-select" required>
+                        <option value="" disabled selected>— Choose a tester —</option>
+                        {% for tester in testers %}
+                            <option value="{{ tester.id }}">{{ tester.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn-action btn-action-primary flex-fill">
+                        <i class="fas fa-check me-2"></i>Assign
+                    </button>
+                    <a href="{% url 'dashboard:manage_projects' %}" class="btn-action btn-action-outline flex-fill">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Reuse the same styles from your create_project page */
+    .field-group {
+        background: rgba(0, 0, 0, 0.25);
+        border-radius: 24px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255,255,255,0.03);
+        transition: all 0.3s ease;
+    }
+    .field-group:hover {
+        border-color: rgba(87,157,255,0.4);
+        box-shadow: 0 15px 30px -12px rgba(87,157,255,0.25);
+    }
+    .form-select {
+        background: #0f1a24;
+        border: 1px solid rgba(87,157,255,0.2);
+        color: #e2e8f0;
+        border-radius: 18px;
+        padding: 0.8rem 1rem;
+    }
+    .form-select:focus {
+        border-color: var(--jira-accent);
+        box-shadow: 0 0 0 3px rgba(87,157,255,0.25);
+    }
+    label {
+        color: #b0c4de;
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,391 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Bootstrap Icons (optional, but we'll keep for consistency) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  :root {
+    --primary-light: #eef6ff;
+    --secondary-light: #f8fafd;
+    --accent-blue: #0a58ca;
+    --accent-cyan: #0dcaf0;
+    --accent-green: #27ae60;
+    --accent-red: #e74c3c;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --card-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+    --card-hover-shadow: 0 20px 35px -8px rgba(0,0,0,0.1);
+    --border-radius-card: 24px;
+    --border-radius-icon: 16px;
+    --transition-default: all 0.2s ease;
+  }
+
+  /* Page header (matches assigned bugs) */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem 0 2rem 0;
+  }
+  .page-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    letter-spacing: -0.02em;
+  }
+  .page-title i {
+    color: var(--accent-cyan);
+    font-size: 2rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(13,202,240,0.15);
+  }
+  .total-badge {
+    background: white;
+    color: var(--text-dark);
+    padding: 0.6rem 1.5rem;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(0,0,0,0.02);
+  }
+  .total-badge i {
+    color: var(--accent-cyan);
+    margin-right: 0.5rem;
+  }
+
+  /* KPI cards (exactly like assigned bugs) */
+  .kpi-card {
+    background: white;
+    border-radius: var(--border-radius-card);
+    padding: 1.5rem 1.5rem;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition-default);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid rgba(0,0,0,0.02);
+    height: 100%;
+  }
+  .kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--card-hover-shadow);
+  }
+  .kpi-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--border-radius-icon);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    background: var(--secondary-light);
+    color: var(--accent-blue);
+  }
+  .kpi-content h6 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+    margin-bottom: 0.2rem;
+    font-weight: 500;
+  }
+  .kpi-content h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  /* Individual icon colors */
+  .kpi-card.total .kpi-icon { background: #e8f0fe; color: #0a58ca; }
+  .kpi-card.open .kpi-icon { background: #fee2e2; color: #b91c1c; }
+  .kpi-card.progress .kpi-icon { background: #fff3cd; color: #856404; }
+  .kpi-card.resolved .kpi-icon { background: #d1fae5; color: #065f46; }
+
+  /* Chart cards */
+  .chart-card {
+    background: white;
+    border-radius: var(--border-radius-card);
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(0,0,0,0.02);
+    transition: var(--transition-default);
+    height: 100%;
+  }
+  .chart-card:hover {
+    box-shadow: var(--card-hover-shadow);
+  }
+  .chart-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .chart-title i {
+    color: var(--accent-cyan);
+    background: rgba(13,202,240,0.1);
+    padding: 0.5rem;
+    border-radius: 12px;
+  }
+  .chart-container {
+    height: 260px;
+    position: relative;
+  }
+
+  /* Spacing */
+  .section-spacing {
+    margin-bottom: 2rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .kpi-card { padding: 1rem; }
+    .kpi-icon { width: 50px; height: 50px; font-size: 1.5rem; }
+    .kpi-content h2 { font-size: 1.5rem; }
+  }
+</style>
+
+<div class="container-fluid px-4">
+  <!-- Page Header (with total badge) -->
+  <div class="page-header">
+    <h2 class="page-title">
+      <i class="bi bi-graph-up"></i> Bug Analytics
+    </h2>
+    <div class="total-badge">
+      <i class="bi bi-bug"></i> Total: {{ total_bugs }}
+    </div>
+  </div>
+
+  <!-- KPI Cards Row -->
+  <div class="row g-4 section-spacing">
+    <div class="col-md-3">
+      <div class="kpi-card total">
+        <div class="kpi-icon"><i class="bi bi-bug"></i></div>
+        <div class="kpi-content">
+          <h6>Total Bugs</h6>
+          <h2>{{ total_bugs }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="kpi-card open">
+        <div class="kpi-icon"><i class="bi bi-exclamation-circle"></i></div>
+        <div class="kpi-content">
+          <h6>Open</h6>
+          <h2>{{ open_bugs }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="kpi-card progress">
+        <div class="kpi-icon"><i class="bi bi-arrow-repeat"></i></div>
+        <div class="kpi-content">
+          <h6>In Progress</h6>
+          <h2>{{ in_progress }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="kpi-card resolved">
+        <div class="kpi-icon"><i class="bi bi-check-circle"></i></div>
+        <div class="kpi-content">
+          <h6>Resolved</h6>
+          <h2>{{ resolved }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two Charts Row -->
+  <div class="row g-4 section-spacing">
+    <div class="col-md-6">
+      <div class="chart-card">
+        <div class="chart-title">
+          <i class="bi bi-pie-chart"></i> Bug Status Distribution
+        </div>
+        <div class="chart-container">
+          <canvas id="bugChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="chart-card">
+        <div class="chart-title">
+          <i class="bi bi-graph-up"></i> Monthly Bug Trend
+        </div>
+        <div class="chart-container">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Severity Chart (centered) -->
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="chart-card">
+        <div class="chart-title">
+          <i class="bi bi-exclamation-triangle"></i> Bug Severity Distribution
+        </div>
+        <div class="chart-container" style="height: 280px;">
+          <canvas id="severityChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  // Professional color palette
+  const statusColors = ['#e74c3c', '#f39c12', '#27ae60'];   // Open, In Progress, Resolved
+  const severityColors = ['#e74c3c', '#f39c12', '#3498db', '#27ae60']; // Critical, High, Medium, Low
+
+  // Status Doughnut Chart
+  new Chart(document.getElementById('bugChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Open', 'In Progress', 'Resolved'],
+      datasets: [{
+        data: [{{ open_bugs }}, {{ in_progress }}, {{ resolved }}],
+        backgroundColor: statusColors,
+        borderColor: 'white',
+        borderWidth: 3,
+        hoverOffset: 12,
+        cutout: '70%',
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: { size: 12, family: "'Inter', system-ui" },
+            boxWidth: 12,
+            padding: 15,
+            color: '#334155'
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `${ctx.label}: ${ctx.raw} bugs (${((ctx.raw / ({{ total_bugs }} || 1)) * 100).toFixed(1)}%)`
+          },
+          bodyFont: { family: "'Inter', system-ui" },
+          titleFont: { family: "'Inter', system-ui", weight: 'bold' },
+          backgroundColor: '#1e293b',
+          titleColor: '#f1f5f9',
+          bodyColor: '#cbd5e1',
+          padding: 10,
+          cornerRadius: 8
+        }
+      }
+    }
+  });
+
+  // Monthly Trend Line Chart
+  new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels: {{ months|safe }},
+      datasets: [{
+        label: 'Bugs Reported',
+        data: {{ counts|safe }},
+        borderColor: '#0dcaf0',
+        backgroundColor: 'rgba(13,202,240,0.1)',
+        fill: true,
+        tension: 0.3,
+        pointBackgroundColor: '#0a58ca',
+        pointBorderColor: '#fff',
+        pointRadius: 4,
+        pointHoverRadius: 7,
+        borderWidth: 2,
+        pointStyle: 'circle'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          backgroundColor: '#1e293b',
+          titleColor: '#f1f5f9',
+          bodyColor: '#cbd5e1',
+          padding: 10,
+          cornerRadius: 8
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: '#e9edf2', drawBorder: false },
+          title: { display: true, text: 'Number of Bugs', color: '#64748b', font: { size: 11 } }
+        },
+        x: {
+          grid: { display: false },
+          title: { display: true, text: 'Month', color: '#64748b', font: { size: 11 } }
+        }
+      },
+      elements: { line: { borderJoin: 'round' } }
+    }
+  });
+
+  // Severity Bar Chart
+  new Chart(document.getElementById('severityChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Critical', 'High', 'Medium', 'Low'],
+      datasets: [{
+        label: 'Number of Bugs',
+        data: [{{ critical }}, {{ high }}, {{ medium }}, {{ low }}],
+        backgroundColor: severityColors,
+        borderRadius: 8,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1e293b',
+          titleColor: '#f1f5f9',
+          bodyColor: '#cbd5e1',
+          padding: 10,
+          cornerRadius: 8
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: '#e9edf2', drawBorder: false },
+          title: { display: true, text: 'Bug Count', color: '#64748b', font: { size: 11 } }
+        },
+        x: {
+          grid: { display: false },
+          title: { display: true, text: 'Severity Level', color: '#64748b', font: { size: 11 } }
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}

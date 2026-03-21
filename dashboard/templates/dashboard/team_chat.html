@@ -1,0 +1,434 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+{% load dashboard_extras %}
+
+{% block page_title %}Team Chat{% endblock %}
+
+{% block quick_actions %}
+<span class="online-badge"><i class="bi bi-circle-fill"></i> Online</span>
+{% endblock %}
+
+{% block content %}
+<style>
+  :root {
+    --chat-bg: #0b141a;          /* dark chat background */
+    --chat-incoming: #1f2c33;     /* incoming message bg */
+    --chat-outgoing: #005c4b;      /* outgoing message bg */
+  }
+
+  /* Chat card – dark */
+  .chat-card {
+    background: var(--chat-bg);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    border: 1px solid #1f2c33;
+    margin: 0 auto;
+    max-width: 900px;
+  }
+
+  .card-header-custom {
+    padding: 1rem 1.5rem;
+    background: var(--chat-incoming);
+    border-bottom: 1px solid #2a3940;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .card-header-custom h5 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #e9edef;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .card-header-custom i {
+    color: #8696a0;
+    background: rgba(255,255,255,0.05);
+    padding: 0.5rem;
+    border-radius: 14px;
+  }
+
+  .chat-container {
+    height: 420px;
+    overflow-y: auto;
+    padding: 1.5rem;
+    background: var(--chat-bg);
+    scroll-behavior: smooth;
+  }
+  .chat-container::-webkit-scrollbar {
+    width: 6px;
+  }
+  .chat-container::-webkit-scrollbar-track {
+    background: var(--chat-incoming);
+    border-radius: 10px;
+  }
+  .chat-container::-webkit-scrollbar-thumb {
+    background: #394b54;
+    border-radius: 10px;
+  }
+
+  .message-row {
+    display: flex;
+    margin-bottom: 1rem;
+    align-items: flex-end;
+    width: 100%;
+  }
+  .message-row.justify-content-start {
+    justify-content: flex-start !important;
+  }
+  .message-row.justify-content-end {
+    justify-content: flex-end !important;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: white;
+    text-transform: uppercase;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    flex-shrink: 0;
+    margin-right: 8px;
+  }
+
+  .message-bubble-wrapper {
+    max-width: 65%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .message-bubble {
+    padding: 0.6rem 0.9rem;
+    border-radius: 18px;
+    word-wrap: break-word;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: #e9edef;
+  }
+  .my-message .message-bubble {
+    background: var(--chat-outgoing);
+    border-bottom-right-radius: 4px;
+  }
+  .other-message .message-bubble {
+    background: var(--chat-incoming);
+    border-bottom-left-radius: 4px;
+  }
+
+  .message-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.2rem;
+    font-size: 0.8rem;
+    color: #8696a0;
+  }
+  .my-message .message-header {
+    justify-content: flex-end;
+  }
+
+  .role-badge {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 30px;
+    background: rgba(255,255,255,0.1);
+    color: #b3b3b3;
+  }
+  .role-badge.admin {
+    background: #991b1b;
+    color: #fecaca;
+  }
+  .role-badge.developer {
+    background: #0369a1;
+    color: #bae6fd;
+  }
+  .role-badge.tester {
+    background: #065f46;
+    color: #a7f3d0;
+  }
+
+  .message-time {
+    font-size: 0.65rem;
+    color: #8696a0;
+    margin-top: 0.2rem;
+    text-align: right;
+  }
+
+  .message-actions {
+    margin-top: 0.3rem;
+    display: flex;
+    gap: 0.8rem;
+    justify-content: flex-end;
+  }
+  .message-actions a {
+    text-decoration: none;
+    font-size: 0.7rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    color: #8696a0;
+  }
+  .message-actions a:hover {
+    opacity: 1;
+    color: #e9edef;
+  }
+  .edit-link:hover {
+    color: #0dcaf0;
+  }
+  .delete-link:hover {
+    color: #ef4444;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: #8696a0;
+    padding: 3rem 1rem;
+  }
+  .empty-state i {
+    font-size: 3rem;
+    opacity: 0.3;
+    margin-bottom: 1rem;
+    color: #0dcaf0;
+  }
+
+  .input-area {
+    padding: 1rem 1.5rem;
+    background: var(--chat-incoming);
+    border-top: 1px solid #2a3940;
+  }
+  .input-group-custom {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .input-group-custom input {
+    flex: 1;
+    background: #2a3940;
+    border: none;
+    border-radius: 40px;
+    padding: 0.8rem 1.5rem;
+    font-size: 0.95rem;
+    color: #e9edef;
+    transition: all 0.2s;
+  }
+  .input-group-custom input::placeholder {
+    color: #8696a0;
+  }
+  .input-group-custom input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--chat-outgoing);
+  }
+  .btn-send {
+    background: var(--chat-outgoing);
+    color: white;
+    border: none;
+    border-radius: 40px;
+    padding: 0.8rem 2rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+  }
+  .btn-send:hover {
+    background: #007665;
+  }
+
+  /* Online badge (matches quick actions) */
+  .online-badge {
+    background: #10b981;
+    color: white;
+    padding: 0.3rem 1rem;
+    border-radius: 40px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+</style>
+
+<div class="container-fluid px-4">
+  <!-- Chat Card -->
+  <div class="chat-card">
+    <div class="card-header-custom">
+      <i class="bi bi-people-fill"></i>
+      <h5>Project Discussion</h5>
+      <span class="online-badge ms-auto"><i class="bi bi-circle-fill"></i> Online</span>
+    </div>
+
+    <!-- Messages Container -->
+    <div id="chat-box" class="chat-container">
+      {% for m in messages %}
+      <div class="message-row {% if m.user == request.user %}justify-content-end{% else %}justify-content-start{% endif %}">
+        <!-- Avatar only for incoming messages -->
+        {% if m.user != request.user %}
+          <div class="avatar" style="background-color: {{ m.user.username|string_to_color }};">
+            {{ m.user.username|first|upper }}
+          </div>
+        {% endif %}
+
+        <div class="message-bubble-wrapper">
+          <div class="message-bubble {% if m.user == request.user %}my-message{% else %}other-message{% endif %}">
+            <div class="message-header">
+              <strong>{{ m.user.username }}</strong>
+              {% if m.user.is_superuser %}
+                <span class="role-badge admin">Admin</span>
+              {% elif m.user|has_group:'Developer' %}
+                <span class="role-badge developer">Developer</span>
+              {% else %}
+                <span class="role-badge tester">Tester</span>
+              {% endif %}
+            </div>
+            <p class="mb-1">{{ m.message }}</p>
+            <div class="message-time">{{ m.created_at|date:"H:i" }}</div>
+
+            {% if m.user == request.user %}
+            <div class="message-actions">
+              <a href="{% url 'dashboard:edit_team_message' m.id %}" class="edit-link" title="Edit">
+                <i class="bi bi-pencil"></i> Edit
+              </a>
+              <a href="{% url 'dashboard:delete_team_message' m.id %}" class="delete-link" title="Delete" onclick="return confirm('Delete this message?');">
+                <i class="bi bi-trash"></i> Delete
+              </a>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="empty-state">
+        <i class="bi bi-chat-dots"></i>
+        <p>No messages yet. Start the conversation 👋</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-area">
+      <form method="POST" id="message-form">
+        {% csrf_token %}
+        <div class="input-group-custom">
+          <input type="text" name="message" placeholder="Type a message..." required>
+          <button type="submit" class="btn-send">
+            <i class="bi bi-send"></i> Send
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript (updated with Bootstrap Icons) -->
+<script>
+  const chatBox = document.getElementById('chat-box');
+  const messageForm = document.getElementById('message-form');
+
+  function stringToColor(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash % 360);
+    return `hsl(${hue}, 70%, 70%)`;
+  }
+
+  function escapeHtml(unsafe) {
+    return unsafe.replace(/[&<>"]/g, m => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;'
+    }[m]));
+  }
+
+  function loadMessages() {
+    fetch("{% url 'dashboard:fetch_team_messages' %}")
+      .then(res => res.json())
+      .then(data => {
+        let html = '';
+        if (data.messages.length === 0) {
+          html = `<div class="empty-state">
+                    <i class="bi bi-chat-dots"></i>
+                    <p>No messages yet. Start the conversation 👋</p>
+                  </div>`;
+        } else {
+          data.messages.forEach(msg => {
+            const alignment = msg.is_me ? 'justify-content-end' : 'justify-content-start';
+            const bubbleClass = msg.is_me ? 'my-message' : 'other-message';
+            let roleBadge = '';
+            if (msg.is_admin) roleBadge = '<span class="role-badge admin">Admin</span>';
+            else if (msg.is_developer) roleBadge = '<span class="role-badge developer">Developer</span>';
+            else roleBadge = '<span class="role-badge tester">Tester</span>';
+
+            const avatarColor = stringToColor(msg.user);
+            const avatarInitial = msg.user.charAt(0).toUpperCase();
+
+            let actionLinks = '';
+            if (msg.is_me) {
+              actionLinks = `<div class="message-actions">
+                <a href="/team-chat/edit/${msg.id}/" class="edit-link"><i class="bi bi-pencil"></i> Edit</a>
+                <a href="/team-chat/delete/${msg.id}/" class="delete-link" onclick="return confirm('Delete this message?')"><i class="bi bi-trash"></i> Delete</a>
+              </div>`;
+            }
+
+            const avatarHtml = !msg.is_me ? `<div class="avatar" style="background-color: ${avatarColor};">${avatarInitial}</div>` : '';
+
+            html += `<div class="message-row ${alignment}">
+                        ${avatarHtml}
+                        <div class="message-bubble-wrapper">
+                          <div class="message-bubble ${bubbleClass}">
+                            <div class="message-header">
+                              <strong>${msg.user}</strong>${roleBadge}
+                            </div>
+                            <p class="mb-1">${escapeHtml(msg.message)}</p>
+                            <div class="message-time">${msg.time}</div>
+                            ${actionLinks}
+                          </div>
+                        </div>
+                      </div>`;
+          });
+        }
+        chatBox.innerHTML = html;
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+  }
+
+  // Initial scroll
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  // Auto-refresh every 3 seconds
+  setInterval(loadMessages, 3000);
+
+  // Handle form submission via AJAX
+  messageForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const input = this.message;
+    if (!input.value.trim()) return;
+
+    fetch(window.location.pathname, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': this.csrfmiddlewaretoken.value,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({ message: input.value })
+    })
+    .then(res => {
+      if (res.ok) {
+        input.value = '';
+        loadMessages();
+      }
+    })
+    .catch(err => console.error(err));
+  });
+</script>
+{% endblock %}

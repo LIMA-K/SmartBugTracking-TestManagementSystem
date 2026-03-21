@@ -1,0 +1,342 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Bootstrap Icons (replaces Font Awesome) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  :root {
+    --primary-light: #eef6ff;
+    --secondary-light: #f8fafd;
+    --accent-blue: #0a58ca;
+    --accent-cyan: #0dcaf0;
+    --accent-orange: #e67e22;
+    --accent-green: #27ae60;
+    --accent-red: #e74c3c;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --card-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+    --border-radius-card: 24px;
+    --border-radius-table: 20px;
+    --transition-default: all 0.2s ease;
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem 0 2rem 0;
+  }
+  .page-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    letter-spacing: -0.02em;
+  }
+  .page-title i {
+    color: var(--accent-cyan);
+    font-size: 2rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(13,202,240,0.15);
+  }
+  .total-badge {
+    background: white;
+    color: var(--text-dark);
+    padding: 0.6rem 1.5rem;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(0,0,0,0.02);
+  }
+  .total-badge i {
+    color: var(--accent-cyan);
+    margin-right: 0.5rem;
+  }
+
+  /* table card */
+  .table-card {
+    background: white;
+    border-radius: var(--border-radius-card);
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(0,0,0,0.02);
+    overflow: hidden;
+  }
+  .table-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #f1f4f8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .table-header h5 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .table-header h5 i {
+    color: var(--accent-cyan);
+    background: rgba(13,202,240,0.1);
+    padding: 0.5rem;
+    border-radius: 14px;
+  }
+  .table-responsive {
+    max-height: 500px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+  }
+  .table-responsive::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .table-responsive::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+  }
+  .table-responsive::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+  .table {
+    margin-bottom: 0;
+    min-width: 1200px;
+  }
+  .table thead th {
+    background: var(--secondary-light);
+    color: var(--text-dark);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: none;
+    padding: 1rem 1.5rem;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    background: #f8fafd;
+    z-index: 10;
+    box-shadow: inset 0 -1px 0 #e9ecef;
+  }
+  .table tbody tr {
+    transition: background 0.15s;
+  }
+  .table tbody tr:hover {
+    background: #f9fcff;
+  }
+  .table td {
+    padding: 1.2rem 1.5rem;
+    vertical-align: middle;
+    border-color: #f1f4f8;
+    color: #334155;
+    white-space: nowrap;
+  }
+  .bug-id {
+    font-weight: 700;
+    color: var(--accent-blue);
+    background: rgba(10,88,202,0.08);
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    display: inline-block;
+    font-size: 0.85rem;
+  }
+  .test-case-title {
+    max-width: 250px;
+    white-space: normal;
+    word-break: break-word;
+    color: var(--text-dark);
+    font-weight: 500;
+  }
+
+  /* custom badges */
+  .badge-custom {
+    padding: 0.5em 1.2em;
+    border-radius: 30px;
+    font-weight: 500;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+  }
+  .badge-critical { background: #fee2e2; color: #b91c1c; }
+  .badge-high { background: #fff3cd; color: #856404; }
+  .badge-medium { background: #cff4fc; color: #055160; }
+  .badge-low { background: #d1fae5; color: #065f46; }
+  .badge-open { background: #e2e8f0; color: #334155; }
+  .badge-progress { background: #cff4fc; color: #055160; }
+  .badge-resolved { background: #d1e7dd; color: #0f5132; }
+  .badge-closed { background: #e2e8f0; color: #334155; }
+
+  /* action buttons */
+  .action-group {
+    display: flex;
+    gap: 0.6rem;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .btn-action {
+    padding: 0.4rem 1rem;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: var(--transition-default);
+    border: none;
+    cursor: pointer;
+  }
+  .btn-update {
+    background: var(--text-dark);
+    color: white;
+  }
+  .btn-update:hover {
+    background: #0f1a24;
+    color: white;
+  }
+  .btn-fix {
+    background: #27ae60;
+    color: white;
+  }
+  .btn-fix:hover {
+    background: #1e8449;
+    color: white;
+  }
+  .btn-replace {
+    background: #f39c12;
+    color: #2c3e50;
+  }
+  .btn-replace:hover {
+    background: #da8c0c;
+    color: #2c3e50;
+  }
+  .fix-uploaded-badge {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 0.4rem 1rem;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+</style>
+
+<div class="container-fluid px-4">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h2 class="page-title">
+      <i class="bi bi-bug"></i> Assigned Bugs
+    </h2>
+    <div class="total-badge">
+      <i class="bi bi-list"></i> Total: {{ bugs|length }}
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="table-card">
+    <div class="table-header">
+      <h5><i class="bi bi-clipboard-check"></i> Bugs assigned to you</h5>
+      <!-- Optional: add a search or filter here -->
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Bug ID</th>
+            <th>Title</th>
+            <th>Project</th>
+            <th>Severity</th>
+            <th>Status</th>
+            <th>Reported By</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for bug in bugs %}
+           <tr>
+            <td>
+              <span class="bug-id"><i class="bi bi-hashtag" style="opacity:0.5;"></i> BUG-{{ bug.id }}</span>
+            </td>
+            <td>
+              <span class="test-case-title">{{ bug.title }}</span>
+            </td>
+            <td>
+              <span class="fw-medium">{{ bug.test_case.project.name }}</span>
+            </td>
+            <td>
+              {% if bug.priority == "Critical" %}
+                <span class="badge-custom badge-critical"><i class="bi bi-exclamation-triangle-fill"></i> Critical</span>
+              {% elif bug.priority == "High" %}
+                <span class="badge-custom badge-high"><i class="bi bi-arrow-up"></i> High</span>
+              {% elif bug.priority == "Medium" %}
+                <span class="badge-custom badge-medium"><i class="bi bi-dash"></i> Medium</span>
+              {% else %}
+                <span class="badge-custom badge-low"><i class="bi bi-arrow-down"></i> Low</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if bug.status == "Open" %}
+                <span class="badge-custom badge-open"><i class="bi bi-door-open"></i> Open</span>
+              {% elif bug.status == "In Progress" %}
+                <span class="badge-custom badge-progress"><i class="bi bi-arrow-repeat"></i> In Progress</span>
+              {% elif bug.status == "Resolved" %}
+                <span class="badge-custom badge-resolved"><i class="bi bi-check-circle"></i> Resolved</span>
+              {% elif bug.status == "Closed" %}
+                <span class="badge-custom badge-closed"><i class="bi bi-check2-all"></i> Closed</span>
+              {% else %}
+                <span class="badge-custom badge-closed">{{ bug.status }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="d-flex align-items-center gap-1">
+                <i class="bi bi-person-circle text-muted"></i> {{ bug.reported_by.username }}
+              </span>
+            </td>
+            <td>
+              <div class="action-group">
+                <a href="{% url 'dashboard:update_bug_status' bug.id %}" class="btn-action btn-update">
+                  <i class="bi bi-pencil"></i> Update
+                </a>
+
+                {% if bug.fix_file %}
+                  <span class="fix-uploaded-badge"><i class="bi bi-check"></i> Fix Uploaded</span>
+                  <a href="{% url 'dashboard:developer_patch_upload' bug.id %}" class="btn-action btn-replace">
+                    <i class="bi bi-arrow-repeat"></i> Replace
+                  </a>
+                {% else %}
+                  <a href="{% url 'dashboard:developer_patch_upload' bug.id %}" class="btn-action btn-fix">
+                    <i class="bi bi-upload"></i> Upload Fix
+                  </a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-5">
+              <i class="bi bi-inbox fs-2 mb-2" style="opacity:0.3;"></i>
+              <p class="mb-0">No bugs assigned to you yet.</p>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

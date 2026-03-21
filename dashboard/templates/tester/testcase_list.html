@@ -1,0 +1,461 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Bootstrap Icons are already in base, so no extra link needed -->
+
+<style>
+  /* Page header */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem 0 2rem 0;
+  }
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .page-title i {
+    color: #f97316;
+    font-size: 2rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(249,115,22,0.2);
+  }
+
+  /* Card styling */
+  .cases-card {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.02);
+    overflow: hidden;
+  }
+  .card-header-custom {
+    padding: 1.5rem 2rem;
+    background: white;
+    border-bottom: 1px solid #f1f4f8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-header-custom h5 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .card-header-custom h5 i {
+    color: #f97316;
+    background: rgba(249,115,22,0.1);
+    padding: 0.5rem;
+    border-radius: 14px;
+  }
+  .scenario-badge {
+    background: #f1f5f9;
+    color: #334155;
+    padding: 0.4rem 1.2rem;
+    border-radius: 40px;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  /* Summary bar */
+  .summary-bar {
+    padding: 1.2rem 2rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .stats-grid {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .stat-label {
+    font-weight: 500;
+    color: #64748b;
+  }
+  .stat-value {
+    font-weight: 700;
+    font-size: 1.2rem;
+  }
+  .stat-total .stat-value { color: #0f172a; }
+  .stat-pass .stat-value { color: #10b981; }
+  .stat-fail .stat-value { color: #ef4444; }
+  .stat-blocked .stat-value { color: #f59e0b; }
+
+  .progress-custom {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 40px;
+    overflow: hidden;
+    margin-top: 0.8rem;
+  }
+  .progress-bar-green {
+    background: #10b981;
+    height: 100%;
+  }
+
+  /* Table wrapper – now only vertical scroll, no horizontal forced */
+  .table-wrapper {
+    max-height: 450px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  /* Table layout fixed with percentage columns */
+  .table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  /* Column widths (adjust as needed) */
+  .table th:nth-child(1) { width: 8%; }  /* TC ID */
+  .table th:nth-child(2) { width: 15%; } /* Title */
+  .table th:nth-child(3) { width: 20%; } /* Steps */
+  .table th:nth-child(4) { width: 20%; } /* Expected */
+  .table th:nth-child(5) { width: 20%; } /* Actual */
+  .table th:nth-child(6) { width: 10%; } /* Status */
+  .table th:nth-child(7) { width: 7%; }  /* Actions */
+
+  .table thead th {
+    position: sticky;
+    top: 0;
+    background: #0f172a;
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 1rem 0.5rem;
+    border-bottom: none;
+    z-index: 10;
+    text-align: center;
+    white-space: normal;
+    word-break: break-word;
+  }
+  .table thead th:first-child {
+    border-top-left-radius: 12px;
+  }
+  .table thead th:last-child {
+    border-top-right-radius: 12px;
+  }
+
+  .table td {
+    padding: 0.75rem 0.5rem;
+    vertical-align: middle;
+    border-color: #e2e8f0;
+    background: white;
+    word-break: break-word;
+  }
+  .table tbody tr:hover td {
+    background: #f1f5f9;
+  }
+
+  /* TC ID badge */
+  .tc-badge {
+    display: inline-block;
+    font-weight: 700;
+    color: #f97316;
+    background: rgba(249,115,22,0.1);
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  /* Hidden input */
+  .hidden-id {
+    display: none;
+  }
+
+  /* Form fields – fill cell width */
+  .form-control-sm, .form-select-sm {
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    box-sizing: border-box;
+  }
+  .form-control-sm:focus, .form-select-sm:focus {
+    border-color: #f97316;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+  }
+  textarea.form-control-sm {
+    resize: vertical;
+    min-height: 60px;
+  }
+
+  /* Status select dynamic colors */
+  .status-select option[value="PASS"] { background: #d1fae5; color: #065f46; }
+  .status-select option[value="FAIL"] { background: #fee2e2; color: #b91c1c; }
+  .status-select option[value="BLOCKED"] { background: #fff3cd; color: #856404; }
+
+  /* Action buttons */
+  .btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    transition: all 0.2s;
+  }
+  .btn-delete {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+  .btn-delete:hover {
+    background: #fecaca;
+    color: #991b1b;
+  }
+  .btn-add-row {
+    border: 1px solid #f97316;
+    color: #f97316;
+    background: transparent;
+    border-radius: 40px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-add-row:hover {
+    background: #f97316;
+    color: white;
+  }
+  .btn-save {
+    background: #f97316;
+    color: white;
+    border: none;
+    border-radius: 40px;
+    padding: 0.6rem 2.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-save:hover {
+    background: #e36209;
+  }
+
+  .footer-actions {
+    padding: 1.5rem 2rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+</style>
+
+<div class="container-fluid px-4">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h2 class="page-title">
+      <i class="bi bi-flask"></i> Test Cases
+    </h2>
+  </div>
+
+  <!-- Main Card -->
+  <div class="cases-card">
+    <!-- Card Header -->
+    <div class="card-header-custom">
+      <h5><i class="bi bi-flask"></i> Test Case Management</h5>
+      <span class="scenario-badge">
+        <i class="bi bi-tag me-1"></i> {{ scenario.title }}
+      </span>
+    </div>
+
+    <!-- Summary Bar -->
+    <div class="summary-bar">
+      <div class="stats-grid">
+        <div class="stat-item stat-total">
+          <span class="stat-label">Total:</span>
+          <span class="stat-value">{{ total }}</span>
+        </div>
+        <div class="stat-item stat-pass">
+          <span class="stat-label"><i class="bi bi-check-circle-fill text-success me-1"></i>Pass:</span>
+          <span class="stat-value">{{ passed }}</span>
+        </div>
+        <div class="stat-item stat-fail">
+          <span class="stat-label"><i class="bi bi-x-circle-fill text-danger me-1"></i>Fail:</span>
+          <span class="stat-value">{{ failed }}</span>
+        </div>
+        <div class="stat-item stat-blocked">
+          <span class="stat-label"><i class="bi bi-slash-circle-fill text-warning me-1"></i>Blocked:</span>
+          <span class="stat-value">{{ blocked }}</span>
+        </div>
+      </div>
+      <div class="progress-custom mt-2">
+        <div class="progress-bar-green" style="width: {{ pass_percent }}%;"></div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <form method="POST">
+      {% csrf_token %}
+      <div class="table-wrapper">
+        <table class="table table-bordered align-middle" id="testcaseTable">
+          <thead>
+            <tr>
+              <th>TC ID</th>
+              <th>Title</th>
+              <th>Steps</th>
+              <th>Expected</th>
+              <th>Actual</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tc in testcases %}
+            <tr>
+              <td class="text-center">
+                <span class="tc-badge">TC-{{ forloop.counter|stringformat:"03d" }}</span>
+                <input type="hidden" name="tc_id[]" value="{{ tc.id }}">
+              </td>
+              <td>
+                <input type="text" name="title[]" value="{{ tc.title }}" class="form-control form-control-sm">
+              </td>
+              <td>
+                <textarea name="steps[]" rows="2" class="form-control form-control-sm">{{ tc.steps }}</textarea>
+              </td>
+              <td>
+                <textarea name="expected[]" rows="2" class="form-control form-control-sm">{{ tc.expected_result }}</textarea>
+              </td>
+              <td>
+                <textarea name="actual[]" rows="2" class="form-control form-control-sm">{{ tc.actual_result }}</textarea>
+              </td>
+              <td>
+                <select name="status[]" class="form-select form-select-sm status-select">
+                  <option value="NOT_RUN" {% if tc.status == "NOT_RUN" %}selected{% endif %}>Not Run</option>
+                  <option value="PASS" {% if tc.status == "PASS" %}selected{% endif %}>Pass</option>
+                  <option value="FAIL" {% if tc.status == "FAIL" %}selected{% endif %}>Fail</option>
+                  <option value="BLOCKED" {% if tc.status == "BLOCKED" %}selected{% endif %}>Blocked</option>
+                </select>
+              </td>
+              <td class="text-center">
+                <button type="button" class="btn-icon btn-delete" onclick="deleteRow(this)" title="Delete">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer: Add Row & Save -->
+      <div class="footer-actions">
+        <button type="button" class="btn-add-row" onclick="addRow()">
+          <i class="bi bi-plus-circle"></i> Add Row
+        </button>
+        <button type="submit" class="btn-save">
+          <i class="bi bi-save me-2"></i> Save All
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- JavaScript (unchanged) -->
+<script>
+  function addRow() {
+    let table = document.getElementById("testcaseTable").getElementsByTagName('tbody')[0];
+    let rowCount = table.rows.length + 1;
+    let tcCode = "TC-" + String(rowCount).padStart(3, '0');
+
+    let row = document.createElement("tr");
+    row.innerHTML = `
+      <td class="text-center">
+        <span class="tc-badge">${tcCode}</span>
+      </td>
+      <td><input type="text" name="title[]" class="form-control form-control-sm"></td>
+      <td><textarea name="steps[]" rows="2" class="form-control form-control-sm"></textarea></td>
+      <td><textarea name="expected[]" rows="2" class="form-control form-control-sm"></textarea></td>
+      <td><textarea name="actual[]" rows="2" class="form-control form-control-sm"></textarea></td>
+      <td>
+        <select name="status[]" class="form-select form-select-sm status-select">
+          <option value="NOT_RUN" selected>Not Run</option>
+          <option value="PASS">Pass</option>
+          <option value="FAIL">Fail</option>
+          <option value="BLOCKED">Blocked</option>
+        </select>
+      </td>
+      <td class="text-center">
+        <button type="button" class="btn-icon btn-delete" onclick="deleteRow(this)" title="Delete">
+          <i class="bi bi-trash"></i>
+        </button>
+      </td>
+    `;
+    table.appendChild(row);
+  }
+
+  function deleteRow(button) {
+    let row = button.closest("tr");
+    let hiddenInput = row.querySelector("input[name='tc_id[]']");
+
+    if (hiddenInput) {
+      let tc_id = hiddenInput.value;
+      fetch(`/testcase/delete/${tc_id}/`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            row.remove();
+            updateNumbers();
+          }
+        });
+    } else {
+      row.remove();
+      updateNumbers();
+    }
+  }
+
+  function updateNumbers() {
+    let rows = document.querySelectorAll("#testcaseTable tbody tr");
+    rows.forEach((row, index) => {
+      let badge = row.querySelector(".tc-badge");
+      if (badge) {
+        badge.innerText = "TC-" + String(index + 1).padStart(3, '0');
+      }
+    });
+  }
+
+  // Status select background color on change
+  document.addEventListener("change", function(e) {
+    if (e.target.classList.contains("status-select")) {
+      e.target.classList.remove("bg-success", "bg-danger", "bg-warning", "text-white");
+      if (e.target.value === "PASS") {
+        e.target.classList.add("bg-success", "text-white");
+      } else if (e.target.value === "FAIL") {
+        e.target.classList.add("bg-danger", "text-white");
+      } else if (e.target.value === "BLOCKED") {
+        e.target.classList.add("bg-warning");
+      }
+    }
+  });
+</script>
+
+{% endblock %}

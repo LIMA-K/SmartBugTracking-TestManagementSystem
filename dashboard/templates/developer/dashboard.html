@@ -1,0 +1,409 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Bootstrap Icons (replace Font Awesome) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  :root {
+    --primary-light: #eef6ff;
+    --secondary-light: #f8fafd;
+    --accent-blue: #0a58ca;
+    --accent-cyan: #0dcaf0;
+    --accent-orange: #e67e22;
+    --accent-green: #27ae60;
+    --accent-red: #e74c3c;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --card-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+    --card-hover-shadow: 0 20px 35px -8px rgba(0,0,0,0.1);
+    --border-radius-card: 24px;
+    --border-radius-icon: 16px;
+    --transition-default: all 0.2s ease;
+  }
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 1.5rem 0 2rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    letter-spacing: -0.02em;
+  }
+  .page-title i {
+    color: var(--accent-cyan);
+    font-size: 2.2rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(13,202,240,0.15);
+  }
+
+  /* KPI cards */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .kpi-card {
+    background: white;
+    border-radius: var(--border-radius-card);
+    padding: 1.75rem 1.5rem;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition-default);
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    border: 1px solid rgba(0,0,0,0.02);
+  }
+  .kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--card-hover-shadow);
+  }
+  .kpi-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--border-radius-icon);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    background: var(--secondary-light);
+    color: var(--accent-blue);
+  }
+  .kpi-content h6 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+    margin-bottom: 0.2rem;
+    font-weight: 500;
+  }
+  .kpi-content h3 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1.2;
+  }
+
+  /* high priority banner */
+  .priority-banner {
+    background: linear-gradient(135deg, #fff8f8, #ffffff);
+    border-radius: 28px;
+    padding: 2rem 2.5rem;
+    margin-bottom: 2.5rem;
+    border-left: 10px solid var(--accent-red);
+    box-shadow: var(--card-shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: var(--transition-default);
+  }
+  .priority-banner:hover {
+    box-shadow: var(--card-hover-shadow);
+  }
+  .priority-banner h6 {
+    font-size: 1rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .priority-banner h3 {
+    font-size: 3.2rem;
+    font-weight: 800;
+    color: var(--accent-red);
+    margin: 0;
+    line-height: 1;
+  }
+  .priority-banner i {
+    font-size: 3rem;
+    color: var(--accent-red);
+    opacity: 0.5;
+  }
+
+  /* table container */
+  .table-wrapper {
+    background: white;
+    border-radius: 28px;
+    padding: 1.75rem;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+    border: 1px solid rgba(0,0,0,0.02);
+  }
+  .table-wrapper h5 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .table-wrapper h5 i {
+    color: var(--accent-cyan);
+    background: rgba(13,202,240,0.1);
+    padding: 0.5rem;
+    border-radius: 14px;
+  }
+  .table {
+    margin-bottom: 0;
+  }
+  .table thead th {
+    background: var(--secondary-light);
+    color: var(--text-dark);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: none;
+    padding: 1rem 1rem;
+  }
+  .table tbody tr {
+    transition: background 0.15s;
+  }
+  .table tbody tr:hover {
+    background: #f9fcff;
+  }
+  .table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-color: #f1f4f8;
+    color: #334155;
+  }
+
+  /* custom badges */
+  .badge-custom {
+    padding: 0.5em 1.2em;
+    border-radius: 30px;
+    font-weight: 500;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .badge-high { background: #fee2e2; color: #b91c1c; }
+  .badge-medium { background: #fff3cd; color: #856404; }
+  .badge-low { background: #d1fae5; color: #065f46; }
+  .badge-open { background: #e2e8f0; color: #334155; }
+  .badge-progress { background: #cff4fc; color: #055160; }
+  .badge-resolved { background: #d1e7dd; color: #0f5132; }
+  .badge-critical { background: #f8d7da; color: #842029; }
+
+  /* chart cards */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .chart-card {
+    background: white;
+    border-radius: 28px;
+    padding: 1.75rem;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(0,0,0,0.02);
+    transition: var(--transition-default);
+  }
+  .chart-card:hover {
+    box-shadow: var(--card-hover-shadow);
+  }
+  .chart-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .chart-title i {
+    color: var(--accent-cyan);
+    background: rgba(13,202,240,0.1);
+    padding: 0.5rem;
+    border-radius: 12px;
+  }
+  .insight-text {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    line-height: 1.5;
+  }
+  .insight-text strong {
+    color: var(--text-dark);
+    font-weight: 600;
+  }
+
+  /* responsive */
+  @media (max-width: 992px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .chart-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 576px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+    .priority-banner { flex-direction: column; align-items: start; gap: 1rem; }
+  }
+</style>
+
+<div class="container-fluid px-4">
+  <!-- Page Title -->
+  <h2 class="page-title">
+    <i class="bi bi-pie-chart"></i> Developer Dashboard
+  </h2>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon"><i class="bi bi-bug"></i></div>
+      <div class="kpi-content">
+        <h6>Total Bugs</h6>
+        <h3>{{ total_bugs|default:"0" }}</h3>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon"><i class="bi bi-exclamation-circle"></i></div>
+      <div class="kpi-content">
+        <h6>Open Bugs</h6>
+        <h3>{{ open_bugs|default:"0" }}</h3>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon"><i class="bi bi-arrow-repeat"></i></div>
+      <div class="kpi-content">
+        <h6>In Progress</h6>
+        <h3>{{ in_progress_bugs|default:"0" }}</h3>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon"><i class="bi bi-check-circle"></i></div>
+      <div class="kpi-content">
+        <h6>Resolved Bugs</h6>
+        <h3>{{ resolved_bugs|default:"0" }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- High Priority Banner -->
+  <div class="priority-banner">
+    <div>
+      <h6><i class="bi bi-exclamation-triangle"></i> High Priority Bugs</h6>
+      <h3>{{ high_priority_bugs|default:"0" }}</h3>
+    </div>
+    <i class="bi bi-arrow-right"></i>
+  </div>
+
+  <!-- Recent Bugs Table -->
+  <div class="table-wrapper">
+    <h5><i class="bi bi-clock"></i> Recent Bugs Assigned</h5>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Test Case</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Created At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for bug in recent_bugs %}
+          <tr>
+            <td class="fw-medium">{{ bug.title }}</td>
+            <td>{{ bug.test_case.title|truncatechars:30 }}</td>
+            <td>
+              {% if bug.priority == "High" %}
+                <span class="badge-custom badge-high"><i class="bi bi-arrow-up"></i> High</span>
+              {% elif bug.priority == "Medium" %}
+                <span class="badge-custom badge-medium"><i class="bi bi-dash"></i> Medium</span>
+              {% else %}
+                <span class="badge-custom badge-low"><i class="bi bi-arrow-down"></i> Low</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if bug.status == "Open" %}
+                <span class="badge-custom badge-open"><i class="bi bi-door-open"></i> Open</span>
+              {% elif bug.status == "In Progress" %}
+                <span class="badge-custom badge-progress"><i class="bi bi-arrow-repeat"></i> In Progress</span>
+              {% elif bug.status == "Resolved" %}
+                <span class="badge-custom badge-resolved"><i class="bi bi-check"></i> Resolved</span>
+              {% else %}
+                <span class="badge-custom badge-critical"><i class="bi bi-emoji-frown"></i> Critical</span>
+              {% endif %}
+            </td>
+            <td>{{ bug.created_at|date:"d M Y H:i" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-4">No bugs assigned yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title"><i class="bi bi-pie-chart"></i> Bug Status Distribution</div>
+      <canvas id="bugStatusChart" style="max-height: 260px; width: 100%;"></canvas>
+    </div>
+    <div class="chart-card d-flex flex-column justify-content-center">
+      <div class="chart-title"><i class="bi bi-lightbulb"></i> Quick Insight</div>
+      <div class="insight-text">
+        <p class="mb-2">You have <strong>{{ in_progress_bugs|default:"0" }}</strong> bugs in progress and <strong>{{ open_bugs|default:"0" }}</strong> open.</p>
+        <p>Focus on high priority items first. <i class="bi bi-emoji-wink ms-1" style="color: var(--accent-cyan);"></i></p>
+      </div>
+      <!-- Optional: add a mini progress bar or suggestion -->
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js (keep as is) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+  const labels = [
+    {% for item in bug_status_counts %}
+      '{{ item.status }}',
+    {% endfor %}
+  ];
+  const counts = [
+    {% for item in bug_status_counts %}
+      {{ item.count }},
+    {% endfor %}
+  ];
+  if (labels.length === 0) {
+    labels.push("No Data");
+    counts.push(1);
+  }
+  const ctx = document.getElementById('bugStatusChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: counts,
+        backgroundColor: ['#3498db', '#f39c12', '#2ecc71', '#e74c3c', '#9b59b6'],
+        borderColor: 'white',
+        borderWidth: 2,
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '70%',
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }
+      }
+    }
+  });
+})();
+</script>
+{% endblock %}

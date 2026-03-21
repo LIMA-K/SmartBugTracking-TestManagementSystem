@@ -1,0 +1,325 @@
+{% extends "base_dashboard.html" %}
+
+{% block page_title %}Create New Project{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="text-white mb-1">Create Project</h4>
+    <small class="text-muted">Admin / Projects / New</small>
+</div>
+<div class="container-fluid px-4 py-4">
+    <div class="card-table" style="max-width: 600px; margin: 0 auto;">
+        <div class="card-header">
+            <span><i class="fas fa-plus-circle me-2" style="color: var(--jira-accent);"></i>New Project</span>
+            <span class="text-muted small">fill in the details</span>
+        </div>
+        <div class="p-4">
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- Project Name -->
+                <div class="field-group">
+                    <label for="{{ form.name.id_for_label }}" class="form-label fw-semibold">
+                        <i class="fas fa-tag me-1" style="color: var(--jira-accent);"></i> Project Name
+                    </label>
+                    <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}" 
+                           class="form-control" value="{{ form.name.value|default:'' }}" 
+                           placeholder="e.g. Bug Tracker v2">
+                    {% if form.name.errors %}
+                        <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Description -->
+                <div class="field-group">
+                    <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">
+                        <i class="fas fa-align-left me-1" style="color: var(--jira-accent);"></i> Description
+                    </label>
+                    <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}" 
+                              class="form-control" rows="3" placeholder="Brief description of the project...">{{ form.description.value|default:'' }}</textarea>
+                    {% if form.description.errors %}
+                        <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Status -->
+                <div class="field-group">
+                    <label for="{{ form.status.id_for_label }}" class="form-label fw-semibold">
+                        <i class="fas fa-circle me-1" style="color: var(--jira-accent);"></i> Status
+                    </label>
+                    <select name="{{ form.status.name }}" id="{{ form.status.id_for_label }}" class="form-select">
+                        {% for value, label in form.fields.status.choices %}
+                            <option value="{{ value }}" {% if form.status.value == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% if form.status.errors %}
+                        <div class="text-danger small mt-1">{{ form.status.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex gap-3 mt-5">
+                    <button type="submit" class="btn-action btn-action-primary flex-fill">
+                        <i class="fas fa-check me-2"></i>Create Project
+                    </button>
+                    <a href="{% url 'dashboard:manage_projects' %}" class="btn-action btn-action-outline flex-fill">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ===== GLOBAL PAGE BACKGROUND ===== */
+    body {
+        background: #0a0e17;  /* slightly darker base */
+        position: relative;
+    }
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            radial-gradient(circle at 20% 30%, rgba(87,157,255,0.03) 0%, transparent 30%),
+            radial-gradient(circle at 80% 70%, rgba(87,157,255,0.02) 0%, transparent 35%);
+        pointer-events: none;
+        z-index: 0;
+    }
+    .main-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ===== CARD CONTAINER – ELEVATED ===== */
+    .card-table {
+        background: linear-gradient(135deg, #1e293b 0%, #1a2432 100%);
+        border-radius: 32px;
+        border: 1px solid rgba(87,157,255,0.15);
+        box-shadow: 
+            0 25px 50px -12px rgba(0,0,0,0.8),
+            0 0 0 1px rgba(255,255,255,0.02) inset;
+        backdrop-filter: blur(2px);
+        transition: box-shadow 0.3s ease;
+    }
+    .card-table:hover {
+        box-shadow: 
+            0 30px 60px -15px rgba(0,0,0,0.9),
+            0 0 0 1px rgba(87,157,255,0.2) inset;
+    }
+
+    /* ===== HEADER – CLEANER & SHARPER ===== */
+    .card-header {
+        background: transparent;
+        border-bottom: 1px solid rgba(87,157,255,0.2);
+        font-weight: 600;
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .card-header span:first-child {
+        font-size: 1.25rem;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        letter-spacing: -0.01em;
+    }
+    .card-header i {
+        color: var(--jira-accent);
+        filter: drop-shadow(0 0 5px rgba(87,157,255,0.5));
+    }
+    .card-header .small {
+        font-size: 0.8rem;
+        color: var(--jira-text-muted);
+        background: rgba(255,255,255,0.02);
+        padding: 0.25rem 0.75rem;
+        border-radius: 40px;
+        border: 1px solid rgba(255,255,255,0.03);
+    }
+
+    /* ===== FIELD GROUP – VISUALLY SEPARATED ===== */
+    .field-group {
+        background: rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(4px);
+        border-radius: 24px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(255,255,255,0.03);
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        position: relative;
+        box-shadow: 0 8px 20px -10px rgba(0,0,0,0.5);
+    }
+    .field-group:hover {
+        border-color: rgba(87,157,255,0.4);
+        box-shadow: 0 15px 30px -12px rgba(87,157,255,0.25);
+        transform: translateY(-2px);
+        background: rgba(0, 0, 0, 0.3);
+    }
+    .field-group:focus-within {
+        border-color: var(--jira-accent);
+        box-shadow: 0 0 0 3px rgba(87,157,255,0.15), 0 15px 30px -12px rgba(87,157,255,0.3);
+    }
+
+    /* ===== LABELS – ELEGANT & READABLE ===== */
+    label {
+        color: #b0c4de;  /* softer light blue */
+        margin-bottom: 0.75rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-transform: uppercase;
+    }
+    label i {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+
+    /* ===== INPUTS – DARK WITH SOFT GLOW ===== */
+    .form-control, .form-select {
+        background: #0f1a24;
+        border: 1px solid rgba(87,157,255,0.2);
+        color: #e2e8f0;
+        border-radius: 18px;
+        padding: 0.9rem 1.2rem;
+        font-size: 0.95rem;
+        transition: all 0.25s ease;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .form-control:hover, .form-select:hover {
+        border-color: rgba(87,157,255,0.5);
+        background: #14222e;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--jira-accent);
+        box-shadow: 
+            0 0 0 3px rgba(87,157,255,0.25),
+            inset 0 2px 4px rgba(0,0,0,0.5);
+        color: white;
+        background: #1a2a38;
+        transform: scale(1.01);
+        outline: none;
+    }
+    .form-control::placeholder {
+        color: #5f7a94;
+        font-weight: 300;
+        font-style: italic;
+        opacity: 0.6;
+    }
+    .form-select option {
+        background: #1e2a36;
+        color: #e2e8f0;
+    }
+
+    /* ===== BUTTONS – PREMIUM FEEL ===== */
+    .btn-action {
+        border-radius: 40px;
+        padding: 0.9rem 1.8rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+        cursor: pointer;
+        border: none;
+        font-size: 0.95rem;
+        letter-spacing: 0.02em;
+        position: relative;
+        overflow: hidden;
+    }
+    .btn-action::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        transform: translate(-50%, -50%);
+        transition: width 0.5s, height 0.5s;
+    }
+    .btn-action:active::after {
+        width: 200px;
+        height: 200px;
+    }
+
+    .btn-action-primary {
+        background: linear-gradient(135deg, #579dff, #3f7ae0);
+        color: #0b1220;
+        box-shadow: 0 12px 28px -8px #579dff80;
+    }
+    .btn-action-primary:hover {
+        background: linear-gradient(135deg, #6ba9ff, #4f86f0);
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 20px 35px -8px #579dff;
+    }
+
+    .btn-action-outline {
+        border: 1.5px solid rgba(87,157,255,0.4);
+        color: #d1e0f0;
+        background: rgba(0,0,0,0.2);
+        backdrop-filter: blur(4px);
+    }
+    .btn-action-outline:hover {
+        border-color: var(--jira-accent);
+        color: white;
+        background: rgba(87,157,255,0.1);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px -8px rgba(87,157,255,0.4);
+    }
+
+    /* ===== ERROR MESSAGES ===== */
+    .text-danger {
+        color: #ff8a8a !important;
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+        padding-left: 0.25rem;
+        font-weight: 500;
+    }
+
+    /* ===== BREADCRUMB HEADER ===== */
+    .mb-4 h4 {
+        font-weight: 600;
+        font-size: 1.8rem;
+        background: linear-gradient(135deg, #fff, #cbd5e0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.2rem;
+    }
+    .mb-4 small {
+        color: #6b7f99;
+        font-size: 0.9rem;
+        letter-spacing: 0.3px;
+    }
+
+    /* ===== RESPONSIVE FINE-TUNING ===== */
+    @media (max-width: 576px) {
+        .field-group {
+            padding: 1.2rem;
+        }
+        .btn-action {
+            padding: 0.7rem 1.2rem;
+            font-size: 0.9rem;
+        }
+        .card-header {
+            flex-direction: column;
+            align-items: start;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}

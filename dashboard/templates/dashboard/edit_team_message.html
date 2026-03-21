@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Message | Smart BugTrack</title>
+    {% load static %}
+    {% load dashboard_extras %}
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons & Font Awesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        :root {
+            --navbar-bg: #0f172a;
+            --accent-blue: #579dff;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+            --content-bg: #101214;
+            --border-color: #2d2d44;
+            --card-bg: #1a1f2b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--content-bg);
+            color: var(--text-light);
+            padding-top: 70px;
+        }
+
+        /* Navbar (same as teamchat) */
+        .navbar-custom {
+            background-color: var(--navbar-bg);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            padding: 0.5rem 2rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1030;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--accent-blue) !important;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .navbar-brand i {
+            font-size: 2rem;
+            background: rgba(87,157,255,0.1);
+            padding: 0.4rem;
+            border-radius: 12px;
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            transition: all 0.2s;
+        }
+        .navbar-nav .nav-link:hover {
+            background: var(--navbar-bg);
+            color: white;
+        }
+        .navbar-nav .nav-link:hover i {
+            color: var(--accent-blue);
+        }
+        .navbar-nav .nav-link.active {
+            background: var(--accent-blue);
+            color: #0f172a;
+        }
+        .navbar-nav .nav-link i {
+            margin-right: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .dropdown-menu {
+            background: var(--navbar-bg);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+        .dropdown-item {
+            color: var(--text-muted);
+        }
+        .dropdown-item:hover {
+            background: var(--accent-blue);
+            color: #0f172a;
+        }
+        .dropdown-divider {
+            border-top-color: var(--border-color);
+        }
+
+        /* Edit card */
+        .edit-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 2rem auto;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        .edit-card h4 {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .edit-card h4 i {
+            color: var(--accent-blue);
+        }
+
+        .form-control {
+            background: #1f2a3a;
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            border-radius: 18px;
+            padding: 0.8rem 1.2rem;
+            transition: all 0.2s;
+        }
+        .form-control:focus {
+            background: #1f2a3a;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(87,157,255,0.2);
+            color: white;
+        }
+
+        .btn-dark-custom {
+            background: var(--accent-blue);
+            color: #0f172a;
+            border: none;
+            border-radius: 40px;
+            padding: 0.6rem 1.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-dark-custom:hover {
+            background: #85b8ff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(87,157,255,0.3);
+        }
+
+        .btn-secondary-custom {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            border-radius: 40px;
+            padding: 0.6rem 1.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-secondary-custom:hover {
+            background: var(--card-bg);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-custom {
+                padding: 0.5rem 1rem;
+            }
+            .edit-card {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Fixed Top Navbar (same as teamchat) -->
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'dashboard:role_redirect' %}">
+            <i class="fas fa-bug"></i> BugTracker
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' or request.resolver_match.url_name == 'tester_dashboard' or request.resolver_match.url_name == 'developer_dashboard' %}active{% endif %}" 
+                       href="{% url 'dashboard:role_redirect' %}">
+                        <i class="fas fa-chart-pie"></i> Dashboard
+                    </a>
+                </li>
+
+                {% if user.profile.role == 'ADMIN' %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'manage_projects' %}active{% endif %}" href="{% url 'dashboard:manage_projects' %}">
+                        <i class="fas fa-diagram-project"></i> Projects
+                    </a>
+                </li>
+                {% elif user.profile.role == 'TESTER' %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'tester_projects' %}active{% endif %}" href="{% url 'dashboard:tester_projects' %}">
+                        <i class="fas fa-diagram-project"></i> My Projects
+                    </a>
+                </li>
+                {% elif user.profile.role == 'DEVELOPER' %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'developer_assigned_bugs' %}active{% endif %}" href="{% url 'dashboard:developer_assigned_bugs' %}">
+                        <i class="fas fa-bug"></i> Assigned Bugs
+                    </a>
+                </li>
+                {% endif %}
+
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'team_chat' %}active{% endif %}" href="{% url 'dashboard:team_chat' %}">
+                        <i class="fas fa-comments"></i> Team Chat
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle"></i> {{ request.user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><span class="dropdown-item-text text-muted">Role: {{ request.user.profile.role }}</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{% url 'dashboard:logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container">
+    <div class="edit-card">
+        <h4><i class="fas fa-edit"></i> Edit Message</h4>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-4">
+                <textarea name="message" class="form-control" rows="4" placeholder="Edit your message...">{{ msg.message }}</textarea>
+            </div>
+            <div class="d-flex gap-3">
+                <button type="submit" class="btn-dark-custom">
+                    <i class="fas fa-save me-2"></i>Update
+                </button>
+                <a href="{% url 'dashboard:team_chat' %}" class="btn-secondary-custom">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

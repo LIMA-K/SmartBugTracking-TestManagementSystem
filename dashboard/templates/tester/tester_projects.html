@@ -1,0 +1,212 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Bootstrap Icons are already in base, so no extra link needed -->
+
+<style>
+  /* Page header – matches dashboard style */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem 0 2rem 0;
+  }
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .page-title i {
+    color: #f97316;
+    font-size: 2rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(249,115,22,0.2);
+  }
+
+  /* Card styling – matches dashboard cards */
+  .projects-card {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.02);
+    overflow: hidden;
+  }
+  .card-header-custom {
+    padding: 1.5rem 2rem;
+    background: white;
+    border-bottom: 1px solid #f1f4f8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-header-custom h5 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .card-header-custom h5 i {
+    color: #f97316;
+    background: rgba(249,115,22,0.1);
+    padding: 0.5rem;
+    border-radius: 14px;
+  }
+
+  /* Table styles */
+  .table-responsive {
+    overflow-x: auto;
+  }
+  .table {
+    margin-bottom: 0;
+    min-width: 600px;
+  }
+  .table thead th {
+    background: #f8fafc;
+    color: #0f172a;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+  }
+  .table tbody tr {
+    transition: background 0.15s;
+  }
+  .table tbody tr:hover {
+    background: #f1f5f9;
+  }
+  .table td {
+    padding: 1.2rem 1.5rem;
+    vertical-align: middle;
+    border-color: #e2e8f0;
+    color: #334155;
+  }
+
+  /* Status badge */
+  .status-badge {
+    padding: 0.5em 1.2em;
+    border-radius: 30px;
+    font-weight: 500;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .status-active {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .status-pending {
+    background: #fff3cd;
+    color: #856404;
+  }
+  .status-inactive {
+    background: #e2e8f0;
+    color: #334155;
+  }
+
+  /* Action button – orange outline */
+  .btn-outline-orange {
+    border: 1px solid #f97316;
+    color: #f97316;
+    background: transparent;
+    border-radius: 40px;
+    padding: 0.4rem 1.2rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .btn-outline-orange:hover {
+    background: #f97316;
+    color: white;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 0;
+    color: #64748b;
+  }
+  .empty-state i {
+    font-size: 3rem;
+    opacity: 0.3;
+    margin-bottom: 1rem;
+    color: #f97316;
+  }
+</style>
+
+<div class="container-fluid px-4">
+  <!-- Header -->
+  <div class="page-header">
+    <h2 class="page-title">
+      <i class="bi bi-diagram-3"></i> Projects
+    </h2>
+    <p class="text-muted mb-0">Manage and view your assigned projects</p>
+  </div>
+
+  <!-- Projects Card -->
+  <div class="projects-card">
+    <div class="card-header-custom">
+      <h5><i class="bi bi-list"></i> Your Assigned Projects</h5>
+      <!-- optional count badge -->
+      <span class="badge bg-dark rounded-pill px-3 py-2">{{ projects|length }} Total</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Project Name</th>
+            <th>Status</th>
+            <th>Created On</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for project in projects %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td class="fw-semibold">{{ project.name }}</td>
+            <td>
+              {% if project.status == "Active" %}
+                <span class="status-badge status-active"><i class="bi bi-check-circle-fill"></i> Active</span>
+              {% elif project.status == "Pending" %}
+                <span class="status-badge status-pending"><i class="bi bi-clock"></i> Pending</span>
+              {% else %}
+                <span class="status-badge status-inactive"><i class="bi bi-stop-circle"></i> {{ project.status|default:"Inactive" }}</span>
+              {% endif %}
+            </td>
+            <td>{{ project.created_at|date:"Y-m-d" }}</td>
+            <td>
+              <a href="{% url 'dashboard:tester_scenarios' project.id %}" class="btn-outline-orange">
+                <i class="bi bi-eye"></i> View Scenarios
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="empty-state">
+              <i class="bi bi-folder2-open"></i>
+              <p>No projects available</p>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

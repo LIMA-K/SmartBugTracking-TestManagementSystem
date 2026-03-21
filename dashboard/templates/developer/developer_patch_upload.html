@@ -1,0 +1,264 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Font Awesome (already in base, but safe) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+  /* Page header – matches developer dashboard */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem 0 2rem 0;
+  }
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f172a; /* dark navy */
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .page-title i {
+    color: #0dcaf0; /* cyan */
+    font-size: 2rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(13,202,240,0.2);
+  }
+
+  /* Card styling – matches developer dashboard cards */
+  .form-card {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .card-header-custom {
+    padding: 1.5rem 2rem;
+    background: white;
+    border-bottom: 1px solid #f1f4f8;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .card-header-custom h5 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .card-header-custom i {
+    color: #0dcaf0;
+    background: rgba(13,202,240,0.1);
+    padding: 0.5rem;
+    border-radius: 14px;
+  }
+
+  /* Bug info */
+  .bug-info {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem 2rem;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .bug-info i {
+    font-size: 2rem;
+    color: #0dcaf0;
+    opacity: 0.7;
+  }
+  .bug-details {
+    flex: 1;
+  }
+  .bug-details strong {
+    font-size: 1.1rem;
+    color: #0f172a;
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+  .bug-details span {
+    color: #64748b;
+    font-size: 0.9rem;
+  }
+
+  /* Form body */
+  .card-body-custom {
+    padding: 0 2rem 2rem;
+  }
+
+  /* Form labels */
+  .form-label {
+    font-weight: 500;
+    color: #334155;
+    margin-bottom: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .form-label i {
+    color: #0dcaf0;
+  }
+
+  /* Form controls */
+  .form-control, .form-select {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    background: #f8fafc;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: #0dcaf0;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(13,202,240,0.1);
+    background: white;
+  }
+  textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  /* File input */
+  .file-input-wrapper {
+    position: relative;
+  }
+  .file-input-wrapper input[type=file] {
+    padding: 0.7rem 1.2rem;
+    background: #f8fafc;
+    cursor: pointer;
+  }
+  .file-input-wrapper input[type=file]::file-selector-button {
+    background: #0f172a;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 0.4rem 1rem;
+    margin-right: 1rem;
+    font-weight: 500;
+    transition: 0.2s;
+  }
+  .file-input-wrapper input[type=file]::file-selector-button:hover {
+    background: #0dcaf0;
+  }
+
+  /* Button */
+  .btn-cyan {
+    background: #0dcaf0;
+    color: #0f172a;
+    border: none;
+    border-radius: 40px;
+    padding: 0.7rem 2.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  .btn-cyan:hover {
+    background: #0bb7d4;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(13,202,240,0.2);
+  }
+
+  /* Messages */
+  .alert-custom {
+    background: #e2e8f0;
+    border: 1px solid #cbd5e1;
+    border-radius: 16px;
+    color: #1e293b;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .alert-custom i {
+    color: #0dcaf0;
+  }
+
+  /* Accepted file types hint */
+  .file-hint {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: 0.3rem;
+  }
+</style>
+
+<div class="container-fluid px-4">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h2 class="page-title">
+      <i class="fas fa-upload"></i> Upload Fix / Patch
+    </h2>
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+    <div class="container px-0">
+      {% for message in messages %}
+        <div class="alert-custom">
+          <i class="fas fa-info-circle"></i> {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Form Card -->
+  <div class="form-card">
+    <div class="card-header-custom">
+      <i class="fas fa-paper-plane"></i>
+      <h5>Submit a Fix</h5>
+    </div>
+
+    <!-- Bug Info -->
+    <div class="bug-info">
+      <i class="fas fa-bug"></i>
+      <div class="bug-details">
+        <strong>{{ bug.title }}</strong>
+        <span>Bug ID: #{{ bug.id }} · Priority: {{ bug.priority }}</span>
+      </div>
+    </div>
+
+    <div class="card-body-custom">
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="mb-4">
+          <label class="form-label"><i class="fas fa-file"></i> Upload Fix File</label>
+          <div class="file-input-wrapper">
+            <input type="file" name="fix_file" class="form-control" accept=".zip,.tar.gz,.patch,.diff,.pdf" required>
+          </div>
+          <div class="file-hint">Accepted formats: .zip, .tar.gz, .patch, .diff, .pdf (max size: 10MB)</div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label"><i class="fas fa-comment-dots"></i> Developer Comment</label>
+          <textarea name="developer_comment" class="form-control" rows="4" placeholder="Explain what this fix addresses..."></textarea>
+        </div>
+
+        <div class="text-end">
+          <button type="submit" class="btn-cyan">
+            <i class="fas fa-cloud-upload-alt"></i> Submit Fix
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

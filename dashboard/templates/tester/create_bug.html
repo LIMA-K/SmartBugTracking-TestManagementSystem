@@ -1,0 +1,179 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Bootstrap Icons are already in base, so no extra link needed -->
+
+<style>
+  /* Page header */
+  .page-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 1.5rem 0 2rem 0;
+  }
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .page-title i {
+    color: #f97316;
+    font-size: 2rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(249,115,22,0.2);
+  }
+
+  /* Form card */
+  .form-card {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.02);
+    overflow: hidden;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .card-header-custom {
+    padding: 1.5rem 2rem;
+    background: white;
+    border-bottom: 1px solid #f1f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .card-header-custom h4 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .card-header-custom i {
+    color: #f97316;
+    background: rgba(249,115,22,0.1);
+    padding: 0.5rem;
+    border-radius: 14px;
+  }
+
+  /* Form body */
+  .card-body-custom {
+    padding: 2rem;
+  }
+
+  /* Form labels */
+  .form-label {
+    font-weight: 500;
+    color: #334155;
+    margin-bottom: 0.4rem;
+  }
+
+  /* Form controls */
+  .form-control, .form-select {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 0.7rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    background: #f8fafc;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: #f97316;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+    background: white;
+  }
+
+  /* Button */
+  .btn-orange {
+    background: #f97316;
+    color: white;
+    border: none;
+    border-radius: 40px;
+    padding: 0.7rem 2rem;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  .btn-orange:hover {
+    background: #e36209;
+    color: white;
+  }
+
+  /* Test case info (optional) */
+  .testcase-info {
+    background: #f1f5f9;
+    border-radius: 16px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e2e8f0;
+    text-align: center;
+  }
+  .testcase-info strong {
+    color: #f97316;
+  }
+</style>
+
+<div class="container-fluid px-4">
+  <!-- Header -->
+  <div class="page-header">
+    <h2 class="page-title">
+      <i class="bi bi-bug-fill"></i> Report Bug
+    </h2>
+  </div>
+
+  <!-- Form Card -->
+  <div class="form-card">
+    <div class="card-header-custom">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <h4>New Bug Report</h4>
+    </div>
+
+    <div class="card-body-custom">
+      <!-- Optional: show related test case -->
+      <div class="testcase-info">
+        <i class="bi bi-flask me-1" style="color: #f97316;"></i>
+        Test Case: <strong>{{ testcase.title }}</strong>
+      </div>
+
+      <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-4">
+          <label class="form-label">Bug Title</label>
+          <input type="text" class="form-control" name="title" value="{{ testcase.title }}" required placeholder="e.g., Login button not working">
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">Priority</label>
+          <select name="priority" class="form-select">
+            <option value="Low">Low</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="High">High</option>
+            <option value="Critical">Critical</option>
+          </select>
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" class="btn-orange">
+            <i class="bi bi-save"></i> Save Bug
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

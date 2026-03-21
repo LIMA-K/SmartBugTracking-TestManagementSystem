@@ -1,0 +1,209 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Bootstrap Icons are already in base, so no extra link needed -->
+
+<style>
+  /* Page header – matches dashboard */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem 0 2rem 0;
+  }
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .page-title i {
+    color: #f97316;
+    font-size: 2rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(249,115,22,0.2);
+  }
+
+  /* Card styling */
+  .form-card {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.02);
+    overflow: hidden;
+  }
+  .card-header-custom {
+    padding: 1.5rem 2rem;
+    background: white;
+    border-bottom: 1px solid #f1f4f8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-header-custom h5 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .card-header-custom h5 i {
+    color: #f97316;
+    background: rgba(249,115,22,0.1);
+    padding: 0.5rem;
+    border-radius: 14px;
+  }
+  .scenario-badge {
+    background: #f1f5f9;
+    color: #334155;
+    padding: 0.4rem 1.2rem;
+    border-radius: 40px;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  /* Form table */
+  .table-responsive {
+    padding: 1.5rem 2rem;
+  }
+  .table {
+    margin-bottom: 0;
+    min-width: 800px;
+  }
+  .table thead th {
+    background: #f8fafc;
+    color: #0f172a;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem;
+  }
+  .table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-color: #e2e8f0;
+  }
+
+  /* Form field styling */
+  .form-control, .form-select {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.6rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    width: 100%;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: #f97316;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+  }
+
+  /* Buttons */
+  .btn-orange {
+    background: #f97316;
+    color: white;
+    border: none;
+    border-radius: 40px;
+    padding: 0.6rem 2rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-orange:hover {
+    background: #e36209;
+  }
+  .btn-light-custom {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+    border-radius: 40px;
+    padding: 0.6rem 2rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-light-custom:hover {
+    background: #e2e8f0;
+  }
+
+  .form-actions {
+    padding: 1.5rem 2rem;
+    background: #f8fafc;
+    border-top: 1px solid #f1f4f8;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+  }
+</style>
+
+<div class="container-fluid px-4">
+  <!-- Header -->
+  <div class="page-header">
+    <h2 class="page-title">
+      <i class="bi bi-flask"></i> Add Test Case
+    </h2>
+  </div>
+
+  <!-- Form Card -->
+  <div class="form-card">
+    <div class="card-header-custom">
+      <h5><i class="bi bi-flask"></i> New Test Case</h5>
+      <span class="scenario-badge">
+        <i class="bi bi-tag me-1"></i> {{ scenario.title }}
+      </span>
+    </div>
+
+    <div class="table-responsive">
+      <form method="POST">
+        {% csrf_token %}
+
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Steps</th>
+              <th>Expected Result</th>
+              <th>Actual Result</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ form.title }}</td>
+              <td>{{ form.steps }}</td>
+              <td>{{ form.expected_result }}</td>
+              <td>{{ form.actual_result }}</td>
+              <td>{{ form.status }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <a href="{% url 'dashboard:testcase_list' scenario.id %}" class="btn-light-custom">
+            <i class="bi bi-x"></i> Cancel
+          </a>
+          <button type="submit" class="btn-orange">
+            <i class="bi bi-save"></i> Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

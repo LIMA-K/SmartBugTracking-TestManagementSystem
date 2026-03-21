@@ -1,0 +1,262 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Bootstrap Icons (replaces Font Awesome) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  :root {
+    --primary-light: #eef6ff;
+    --secondary-light: #f8fafd;
+    --accent-blue: #0a58ca;
+    --accent-cyan: #0dcaf0;
+    --accent-green: #27ae60;
+    --accent-red: #e74c3c;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --card-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+    --border-radius-card: 24px;
+    --border-radius-table: 20px;
+    --transition-default: all 0.2s ease;
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem 0 2rem 0;
+  }
+  .page-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    letter-spacing: -0.02em;
+  }
+  .page-title i {
+    color: var(--accent-cyan);
+    font-size: 2rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(13,202,240,0.15);
+  }
+  .total-badge {
+    background: white;
+    color: var(--text-dark);
+    padding: 0.6rem 1.5rem;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(0,0,0,0.02);
+  }
+  .total-badge i {
+    color: var(--accent-cyan);
+    margin-right: 0.5rem;
+  }
+
+  /* table card */
+  .table-card {
+    background: white;
+    border-radius: var(--border-radius-card);
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(0,0,0,0.02);
+    overflow: hidden;
+  }
+  .table-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #f1f4f8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .table-header h5 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .table-header h5 i {
+    color: var(--accent-cyan);
+    background: rgba(13,202,240,0.1);
+    padding: 0.5rem;
+    border-radius: 14px;
+  }
+  .table-responsive {
+    max-height: 600px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+  }
+  .table-responsive::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .table-responsive::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+  }
+  .table-responsive::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+  .table {
+    margin-bottom: 0;
+    min-width: 1200px; /* ensures horizontal scroll if needed */
+  }
+  .table thead th {
+    background: var(--secondary-light);
+    color: var(--text-dark);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: none;
+    padding: 1rem 1.5rem;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    background: #f8fafd;
+    z-index: 10;
+    box-shadow: inset 0 -1px 0 #e9ecef;
+  }
+  .table tbody tr {
+    transition: background 0.15s;
+  }
+  .table tbody tr:hover {
+    background: #f9fcff;
+  }
+  .table td {
+    padding: 1.2rem 1.5rem;
+    vertical-align: top;
+    border-color: #f1f4f8;
+    color: #334155;
+  }
+  .bug-title {
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+  .test-case-title {
+    font-weight: 500;
+    color: var(--accent-blue);
+  }
+
+  /* custom badges (reused) */
+  .badge-custom {
+    padding: 0.5em 1.2em;
+    border-radius: 30px;
+    font-weight: 500;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+  }
+  .badge-open { background: #fff3cd; color: #856404; }
+  .badge-progress { background: #cff4fc; color: #055160; }
+  .badge-resolved { background: #d1e7dd; color: #0f5132; }
+  .badge-closed { background: #e2e8f0; color: #334155; }
+
+  .empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 3rem 0;
+  }
+  .empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+  }
+
+  /* fix for bootstrap table-bordered to match our theme */
+  .table-bordered {
+    border: 1px solid #f1f4f8;
+  }
+  .table-bordered th,
+  .table-bordered td {
+    border: 1px solid #f1f4f8;
+  }
+</style>
+
+<div class="container-fluid px-4">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h2 class="page-title">
+      <i class="bi bi-clipboard-check"></i> Test Case Impact
+    </h2>
+    <div class="total-badge">
+      <i class="bi bi-list"></i> Total: {{ bugs|length }}
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="table-card">
+    <div class="table-header">
+      <h5><i class="bi bi-file-text"></i> Detailed test case information</h5>
+      <!-- Optional: add filter/search later -->
+    </div>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Bug</th>
+            <th>Test Case</th>
+            <th>Steps</th>
+            <th>Expected Result</th>
+            <th>Actual Result</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for bug in bugs %}
+          <tr>
+            <td>
+              <span class="bug-title">{{ bug.title }}</span>
+            </td>
+            <td>
+              <span class="test-case-title">{{ bug.test_case.title }}</span>
+            </td>
+            <td>
+              {{ bug.test_case.steps|truncatewords:10 }}
+            </td>
+            <td>
+              {{ bug.test_case.expected_result }}
+            </td>
+            <td>
+              {{ bug.test_case.actual_result }}
+            </td>
+            <td>
+              {% if bug.status == "Open" %}
+                <span class="badge-custom badge-open"><i class="bi bi-door-open"></i> Open</span>
+              {% elif bug.status == "In Progress" %}
+                <span class="badge-custom badge-progress"><i class="bi bi-arrow-repeat"></i> In Progress</span>
+              {% elif bug.status == "Resolved" %}
+                <span class="badge-custom badge-resolved"><i class="bi bi-check-circle"></i> Resolved</span>
+              {% elif bug.status == "Closed" %}
+                <span class="badge-custom badge-closed"><i class="bi bi-check2-all"></i> Closed</span>
+              {% else %}
+                <span class="badge-custom badge-closed">{{ bug.status }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="empty-state">
+              <i class="bi bi-database"></i>
+              <p class="mb-0">No test case impact data</p>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

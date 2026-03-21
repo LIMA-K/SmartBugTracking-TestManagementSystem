@@ -1,0 +1,392 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Font Awesome (already in base, but safe) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+  /* Page header */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem 0 2rem 0;
+  }
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .page-title i {
+    color: #f97316;
+    font-size: 2rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(249,115,22,0.2);
+  }
+
+  /* KPI cards – dark navy with orange accent */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .kpi-card {
+    background: #0f172a;  /* dark navy */
+    border-radius: 24px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid #1e293b;
+    transition: all 0.2s;
+  }
+  .kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 35px -8px rgba(249,115,22,0.2);
+  }
+  .kpi-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    background: rgba(249,115,22,0.1);
+    color: #f97316;
+  }
+  .kpi-content h6 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #94a3b8;
+    margin-bottom: 0.2rem;
+  }
+  .kpi-content h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+  }
+
+  /* Chart cards */
+  .chart-card {
+    background: white;
+    border-radius: 24px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
+    height: 100%;
+  }
+  .chart-card:hover {
+    box-shadow: 0 20px 35px -8px rgba(249,115,22,0.1);
+    border-color: rgba(249,115,22,0.2);
+  }
+  .chart-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .chart-title i {
+    color: #f97316;
+    background: rgba(249,115,22,0.1);
+    padding: 0.5rem;
+    border-radius: 12px;
+  }
+  .chart-container {
+    height: 260px;
+    position: relative;
+  }
+
+  /* Table card */
+  .table-card {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    margin-top: 2rem;
+  }
+  .table-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #f1f4f8;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .table-header h5 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .table-header h5 i {
+    color: #f97316;
+    background: rgba(249,115,22,0.1);
+    padding: 0.5rem;
+    border-radius: 14px;
+  }
+  .table-responsive {
+    overflow-x: auto;
+  }
+  .table {
+    margin-bottom: 0;
+    min-width: 800px;
+  }
+  .table thead th {
+    background: #0f172a;
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: none;
+    padding: 1rem 1.5rem;
+    white-space: nowrap;
+  }
+  .table tbody tr {
+    transition: background 0.15s;
+  }
+  .table tbody tr:hover {
+    background: #f1f5f9;
+  }
+  .table td {
+    padding: 1rem 1.5rem;
+    vertical-align: middle;
+    border-color: #e2e8f0;
+    color: #334155;
+  }
+
+  /* Custom badges */
+  .badge-custom {
+    padding: 0.5em 1.2em;
+    border-radius: 30px;
+    font-weight: 500;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .badge-open { background: #fee2e2; color: #b91c1c; }
+  .badge-closed { background: #d1fae5; color: #065f46; }
+  .badge-pending { background: #fff3cd; color: #856404; }
+
+  /* Responsive */
+  @media (max-width: 992px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 576px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="container-fluid px-4">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h2 class="page-title">
+      <i class="fas fa-chart-bar"></i> Reports Dashboard
+    </h2>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon"><i class="fas fa-file-alt"></i></div>
+      <div class="kpi-content">
+        <h6>Total Reports</h6>
+        <h3>{{ total_reports }}</h3>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon"><i class="fas fa-check-circle"></i></div>
+      <div class="kpi-content">
+        <h6>Closed</h6>
+        <h3>{{ closed_reports }}</h3>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon"><i class="fas fa-clock"></i></div>
+      <div class="kpi-content">
+        <h6>Pending</h6>
+        <h3>{{ pending_reports }}</h3>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon"><i class="fas fa-exclamation-circle"></i></div>
+      <div class="kpi-content">
+        <h6>Open</h6>
+        <h3>{{ open_reports }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-6">
+      <div class="chart-card">
+        <div class="chart-title">
+          <i class="fas fa-chart-pie"></i> Reports by Status
+        </div>
+        <div class="chart-container">
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="chart-card">
+        <div class="chart-title">
+          <i class="fas fa-chart-bar"></i> Reports by Priority
+        </div>
+        <div class="chart-container">
+          <canvas id="priorityChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reports Table -->
+  <div class="table-card">
+    <div class="table-header">
+      <i class="fas fa-list"></i>
+      <h5>All Reports</h5>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Reported By</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Created At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for report in reports %}
+          <tr>
+            <td>#{{ report.id }}</td>
+            <td class="fw-semibold">{{ report.title }}</td>
+            <td>{{ report.created_by.username }}</td>
+            <td>
+              {% if report.priority == "Critical" %}
+                <span class="badge-custom" style="background:#fee2e2; color:#b91c1c;"><i class="fas fa-skull-crosswalk"></i> Critical</span>
+              {% elif report.priority == "High" %}
+                <span class="badge-custom" style="background:#fee2e2; color:#b91c1c;"><i class="fas fa-arrow-up"></i> High</span>
+              {% elif report.priority == "Medium" %}
+                <span class="badge-custom" style="background:#cff4fc; color:#055160;"><i class="fas fa-minus"></i> Medium</span>
+              {% elif report.priority == "Low" %}
+                <span class="badge-custom" style="background:#d1fae5; color:#065f46;"><i class="fas fa-arrow-down"></i> Low</span>
+              {% else %}
+                <span class="badge-custom" style="background:#e2e8f0; color:#334155;">{{ report.priority }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if report.status == "Open" %}
+                <span class="badge-custom badge-open"><i class="fas fa-door-open"></i> Open</span>
+              {% elif report.status == "Closed" %}
+                <span class="badge-custom badge-closed"><i class="fas fa-check-double"></i> Closed</span>
+              {% elif report.status == "Pending" %}
+                <span class="badge-custom badge-pending"><i class="fas fa-clock"></i> Pending</span>
+              {% else %}
+                <span class="badge-custom" style="background:#e2e8f0; color:#334155;">{{ report.status }}</span>
+              {% endif %}
+            </td>
+            <td>{{ report.created_at|date:"d M Y" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">
+              <i class="fas fa-inbox fa-2x mb-2" style="opacity:0.3;"></i>
+              <p class="mb-0">No reports found</p>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+async function updateCharts() {
+    const response = await fetch("{% url 'dashboard:reports_data' %}");
+    const data = await response.json();
+
+    // Status Chart (doughnut)
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Open', 'Closed', 'Pending'],
+            datasets: [{
+                data: [data.open, data.closed, data.pending],
+                backgroundColor: ['#ef4444', '#10b981', '#f59e0b'],
+                borderColor: 'white',
+                borderWidth: 2,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }
+            }
+        }
+    });
+
+    // Priority Chart (horizontal bar)
+    const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+    new Chart(priorityCtx, {
+        type: 'bar',
+        data: {
+            labels: ['High', 'Medium', 'Low'],
+            datasets: [{
+                label: 'Reports',
+                data: [data.high, data.medium, data.low],
+                backgroundColor: ['#f97316', '#0dcaf0', '#10b981'],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: { beginAtZero: true, grid: { color: '#e2e8f0' } },
+                y: { grid: { display: false } }
+            }
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateCharts();
+    // Refresh every 10 seconds
+    setInterval(updateCharts, 10000);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,278 @@
+{% extends "base_dashboard.html" %}
+
+{% block page_title %}Reports Dashboard{% endblock %}
+
+{% block quick_actions %}
+<a href="{% url 'dashboard:admin_reports' %}" class="btn-quick">
+    <i class="fas fa-sync-alt"></i> Refresh
+</a>
+{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --card-bg: #1a1f2b;
+        --accent: #3b82f6;
+        --text-primary: #f0f3f8;
+        --text-secondary: #9ca3af;
+        --border: #2a2f3c;
+        --success: #10b981;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+    }
+
+    /* Stats cards – same as admin dashboard */
+    .stat-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 1.5rem;
+        padding: 1.5rem 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        box-shadow: 0 8px 20px -8px rgba(0,0,0,0.5);
+        border-left: 4px solid var(--accent);
+        height: 100%;
+    }
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        background: rgba(59,130,246,0.1);
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: var(--accent);
+    }
+    .stat-content h6 {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+        letter-spacing: 0.3px;
+    }
+    .stat-content h4 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+    }
+
+    /* Chart container */
+    .chart-container {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 1.5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Table styles */
+    .card-table {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 1.5rem;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    .card-header {
+        padding: 1.25rem 2rem;
+        border-bottom: 1px solid var(--border);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 600;
+    }
+    .table {
+        margin-bottom: 0;
+        background: transparent;
+    }
+    .table thead th {
+        background: rgba(0,0,0,0.3);
+        color: var(--text-secondary);
+        font-weight: 500;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+    }
+    .table tbody td {
+        padding: 1rem 1.5rem;
+        vertical-align: middle;
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--border);
+    }
+    .table tbody tr:hover td {
+        background: rgba(59,130,246,0.05);
+    }
+
+    .badge {
+        padding: 0.3rem 0.8rem;
+        border-radius: 2rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    .badge-open { background: var(--danger); color: white; }
+    .badge-closed { background: var(--success); color: white; }
+    .badge-pending { background: var(--warning); color: #0f1219; }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+        background: var(--card-bg);
+        border-radius: 1.5rem;
+        border: 1px dashed var(--border);
+        color: var(--text-secondary);
+    }
+</style>
+
+<div class="container-fluid px-4 py-4">
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                <div class="stat-content">
+                    <h6>Total Reports</h6>
+                    <h4>{{ total_reports }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-folder-open"></i></div>
+                <div class="stat-content">
+                    <h6>Open</h6>
+                    <h4>{{ open_reports }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-content">
+                    <h6>Closed</h6>
+                    <h4>{{ closed_reports }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                <div class="stat-content">
+                    <h6>Pending</h6>
+                    <h4>{{ pending_reports }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart: Reports per Project -->
+    <div class="chart-container">
+        <h5 class="text-white mb-4"><i class="fas fa-chart-bar me-2" style="color: var(--accent);"></i>Reports per Project</h5>
+        <canvas id="projectChart" style="max-height: 300px;"></canvas>
+    </div>
+
+    <!-- Recent Reports Table -->
+    <div class="card-table">
+        <div class="card-header">
+            <span><i class="fas fa-history me-2" style="color: var(--accent);"></i>Recent Reports</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Report Title</th>
+                        <th>Project</th>
+                        <th>Created By</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in recent_reports %}
+                    <tr>
+                        <td>{{ report.title }}</td>
+                        <td>{{ report.project.name }}</td>
+                        <td>{{ report.created_by.username }}</td>
+                        <td>
+                            <span class="badge {% if report.priority == 'High' %}badge-open{% elif report.priority == 'Medium' %}badge-pending{% else %}badge-closed{% endif %}">
+                                {{ report.priority }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if report.status == 'Open' %}badge-open
+                                {% elif report.status == 'Closed' %}badge-closed
+                                {% else %}badge-pending{% endif %}">
+                                {{ report.status }}
+                            </span>
+                        </td>
+                        <td>{{ report.created_at|timesince }} ago</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">No reports found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if not recent_reports %}
+    <div class="empty-state">
+        <i class="fas fa-file-alt fa-3x mb-3" style="color: var(--accent); opacity: 0.3;"></i>
+        <h4>No Reports Yet</h4>
+        <p class="text-muted">Reports will appear here once they are created by testers.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Reports per project chart
+    const ctx = document.getElementById('projectChart');
+    if (ctx) {
+        const labels = [{% for item in reports_per_project %}"{{ item.name }}",{% endfor %}];
+        const data = [{% for item in reports_per_project %}{{ item.report_count }},{% endfor %}];
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Reports',
+                    data: data,
+                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                    borderColor: '#3b82f6',
+                    borderWidth: 1,
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#2a2f3c' },
+                        ticks: { color: '#9ca3af' }
+                    },
+                    x: {
+                        ticks: { color: '#9ca3af' }
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}
