@@ -205,7 +205,7 @@ http://127.0.0.1:8000/
 ## 📸 Screenshots
 
 ### Admin Dashboard
-![Admin Dashboard](static/images/admin_dashboard.png)
+![Admin Dashboard](static/images/Admin_dashboard.png)
 
 ### Tester Dashboard
 ![Tester Dashboard](static/images/tester_dashboard.png)
