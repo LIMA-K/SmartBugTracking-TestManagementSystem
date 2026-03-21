@@ -229,7 +229,6 @@ Special thanks to faculty mentors and peers for their guidance.
 ---
 
 ## 📄 License
-
 This project is for academic and learning purposes only.  
 It is not licensed for commercial use.  
 All code is original and developed as part of the MCA final year project.
