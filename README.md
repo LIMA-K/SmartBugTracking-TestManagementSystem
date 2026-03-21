@@ -174,4 +174,63 @@ python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
 http://127.0.0.1:8000/
+## 🚀 Usage
+
+### 👨‍💼 Admin
+- Log in using superuser credentials  
+- Access the admin panel or dashboard  
+- Manage users, assign roles, and create projects  
+- Assign testers and developers  
+- Monitor system-wide bug and test statistics  
+
+### 🧪 Tester
+- Log in as a tester  
+- Access the tester dashboard  
+- Create scenarios and test cases  
+- Execute test cases (Pass / Fail / Blocked)  
+- Report bugs with severity and priority  
+- Track bug status and participate in discussions  
+
+### 💻 Developer
+- Log in as a developer  
+- View assigned bugs  
+- Update bug status (Open → In Progress → Resolved → Closed)  
+- Upload fix files  
+- Add comments and collaborate with testers  
+
+---
+
+## 📸 Screenshots
+
+### Admin Dashboard
+![Admin Dashboard](static/images/admin_dashboard.png)
+
+### Tester Dashboard
+![Tester Dashboard](static/images/tester_dashboard.png)
+
+### Developer Dashboard
+![Developer Dashboard](static/images/developer_dashboard.png)
+
+### Team Chat
+![Team Chat](static/images/team_chat.png)
+
+---
+
+## 👩‍💻 Contributors
+
+**LIMA**  
+MCA Student  
+Project Lead – Backend & Frontend Development  
+
+Special thanks to faculty mentors and peers for their guidance.
+
+---
+
+## 📄 License
+
+This project is for academic and learning purposes only.  
+It is not licensed for commercial use.  
+All code is original and developed as part of the MCA final year project.
+
+
 
